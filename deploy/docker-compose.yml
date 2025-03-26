@@ -1,0 +1,57 @@
+
+version: '3.8'
+
+services:
+  tickes-app:
+    restart: unless-stopped
+    container_name: tickets-app
+    build:
+      context: ../
+      dockerfile: ./deploy/Dockerfile
+    # allocate as many volumes as necessary, if needed.
+    volumes:
+      - ../storage/app:/var/www/html/storage/app
+    env_file:
+      - ../.env
+    ports:
+      - "8080:80"
+    networks:
+      - tickets-net
+    depends_on:
+      - tickets-db
+
+  tickets-db:
+    image: postgres:13
+    container_name: tickets-db
+    restart: always
+    ports:
+     - 5432:5432
+    environment:
+      POSTGRES_DB: tickets
+      POSTGRES_USER: tickets
+      POSTGRES_PASSWORD: tickets
+    volumes:
+      - tickets-db-data:/var/lib/postgresql/data
+    networks:
+      - tickets-net
+
+  tickets-pgadmin:
+    image: dpage/pgadmin4
+    container_name: tickets-pgadmin
+    restart: always
+    ports:
+     - 8888:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: tickets@tickets.com
+      PGADMIN_DEFAULT_PASSWORD: tickets
+    volumes:
+      - tickets-pgadmin-data:/var/lib/pgadmin
+    networks:
+      - tickets-net
+
+volumes:
+  tickets-db-data:
+  tickets-pgadmin-data:
+
+networks:
+  tickets-net:
