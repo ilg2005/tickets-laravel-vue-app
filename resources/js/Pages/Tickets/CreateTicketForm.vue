@@ -47,6 +47,7 @@ const form = useForm({
     priority: ticketProps.ticket?.priority || 'medium',
     created_at: ticketProps.ticket?.created_at || '',
     updated_at: ticketProps.ticket?.updated_at || '',
+    files: [],
 });
 
 const followupForm = useForm({
@@ -60,6 +61,18 @@ const isCreate = computed(() => ticketProps.mode === 'create');
 const isShow = computed(() => ticketProps.mode === 'show');
 const isDisabled = computed(() => ticketProps.mode === 'show');
 
+const fileInput = ref(null);
+
+function handleFileChange(event) {
+    form.files = event.target.files;
+    form.clearErrors('files');
+    Object.keys(form.errors).forEach(key => {
+        if (key.startsWith('files.')) {
+            form.clearErrors(key);
+        }
+    });
+}
+
 const save = () => {
     if (isEdit.value) {
         form.put(route('tickets.update', ticketProps.ticket.id), {
@@ -68,8 +81,17 @@ const save = () => {
         });
     } else if (isCreate.value) {
         form.post(route('tickets.store'), {
-            onSuccess: () =>
-                toast.add({ severity: 'success', summary: 'Success', detail: 'Ticket created', life: 3000 }),
+            onSuccess: () => {
+                toast.add({ severity: 'success', summary: 'Success', detail: 'Ticket created', life: 3000 });
+                form.reset();
+                if (fileInput.value) {
+                    fileInput.value.value = '';
+                }
+            },
+            onError: (errors) => {
+                toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to create ticket. Please check the form.', life: 3000 });
+                console.error('Ticket creation errors:', errors);
+            }
         });
     }
 };
@@ -191,11 +213,11 @@ const deleteConfirm = (followupId) => {
         <div class="grid md:grid-cols-3 h-full gap-8">
             <!-- Ticket form -->
             <form @submit.prevent="save" class="w-full min-h-full">
-                <div class="">
+                <div class="mb-4">
                     <label for="title" class="block text-sm font-medium"
                         :class="{ 'text-gray-500': isShow, 'text-gray-700': !isShow }">Title</label>
                     <input v-model="form.title" id="title" type="text" :disabled="isDisabled" :class="[
-                        'block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm',
+                        'block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm mt-1',
                         { 'cursor-not-allowed text-gray-500 bg-gray-200': isDisabled }
                     ]" />
                     <InputError :message="form.errors.title" class="mt-2" />
@@ -205,7 +227,7 @@ const deleteConfirm = (followupId) => {
                     <label for="description" class="block text-sm font-medium"
                         :class="{ 'text-gray-500': isShow, 'text-gray-700': !isShow }">Description</label>
                     <textarea v-model="form.description" id="description" :disabled="isDisabled" :class="[
-                        'block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm',
+                        'block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm mt-1',
                         { 'cursor-not-allowed text-gray-500 bg-gray-200': isDisabled }
                     ]" rows="4"></textarea>
                     <InputError :message="form.errors.description" class="mt-2" />
@@ -215,7 +237,7 @@ const deleteConfirm = (followupId) => {
                     <label for="status" class="block text-sm font-medium"
                         :class="{ 'text-gray-500': isShow, 'text-gray-700': !isShow }">Status</label>
                     <select v-model="form.status" id="status" :disabled="isDisabled" :class="[
-                        'block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm',
+                        'block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm mt-1',
                         { 'cursor-not-allowed text-gray-500 bg-gray-200': isDisabled }
                     ]">
                         <option value="open">Open</option>
@@ -229,7 +251,7 @@ const deleteConfirm = (followupId) => {
                     <label for="priority" class="block text-sm font-medium"
                         :class="{ 'text-gray-500': isShow, 'text-gray-700': !isShow }">Priority</label>
                     <select v-model="form.priority" id="priority" :disabled="isDisabled" :class="[
-                        'block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm',
+                        'block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm mt-1',
                         { 'cursor-not-allowed text-gray-500 bg-gray-200': isDisabled }
                     ]">
                         <option value="low">Low</option>
@@ -237,6 +259,31 @@ const deleteConfirm = (followupId) => {
                         <option value="high">High</option>
                     </select>
                     <InputError :message="form.errors.priority" class="mt-2" />
+                </div>
+
+                <div class="mb-4" v-if="isCreate">
+                    <label for="files" class="block text-sm font-medium text-gray-700">Прикрепить файлы</label>
+                    <p class="text-xs text-gray-500 mb-1">Макс. 10MB на файл. Разрешены: jpg, png, pdf, doc(x), zip, rar, txt</p>
+                    <input
+                        id="files"
+                        ref="fileInput"
+                        type="file"
+                        multiple
+                        @change="handleFileChange"
+                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 border border-gray-300 rounded-md shadow-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    <div v-if="form.files && form.files.length > 0" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        <p>Выбранные файлы:</p>
+                        <ul>
+                            <li v-for="file in Array.from(form.files)" :key="file.name">
+                                {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
+                            </li>
+                        </ul>
+                    </div>
+                    <InputError class="mt-2" :message="form.errors.files" />
+                    <div v-for="(error, index) in form.errors" :key="index">
+                        <InputError v-if="index.startsWith('files.')" class="mt-1" :message="error" />
+                    </div>
                 </div>
 
                 <template v-if="isEdit || isShow">
@@ -257,11 +304,9 @@ const deleteConfirm = (followupId) => {
                     </div>
                 </template>
 
-                <div v-if="isEdit || isCreate" class="flex justify-end gap-2">
-                    <Button label="Cancel" severity="secondary" class="mt-4" type="button"
-                        @click="form.reset(); form.clearErrors()" />
-                    <Button severity="primary" class="mt-4" type="submit">{{ isEdit ? 'Update Ticket' : 'Create Ticket'
-                        }}</Button>
+                <div v-if="isEdit || isCreate" class="flex justify-end gap-2 mt-4">
+                    <Button label="Cancel" severity="secondary" type="button" @click="form.reset(); form.clearErrors()" :disabled="form.processing"/>
+                    <Button :label="isEdit ? 'Update Ticket' : 'Create Ticket'" severity="primary" type="submit" :loading="form.processing" />
                 </div>
             </form>
 
