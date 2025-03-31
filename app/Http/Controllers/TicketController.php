@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class TicketController extends Controller
 {
@@ -43,20 +44,34 @@ class TicketController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // try {
         Gate::authorize('create', Ticket::class);
-        // } catch (AuthorizationException $e) {
-        //     return redirect()->back()->withErrors(['message' => 'You are not authorized to create a ticket.']);
-        // }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'status' => 'required|string|in:open,in_progress,closed',
             'priority' => 'required|string|in:low,medium,high',
+            'files' => 'nullable|array',
+            'files.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,zip,rar,txt|max:10240',
         ]);
 
-        $request->user()->tickets()->create($validated);
+        $ticketData = collect($validated)->except('files')->toArray();
+        $ticket = $request->user()->tickets()->create($ticketData);
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('ticket_attachments/' . $ticket->id, 'local');
+
+                $ticket->files()->create([
+                    'user_id' => $request->user()->id,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'filename' => basename($path),
+                    'path' => $path,
+                    'mime_type' => $file->getClientMimeType(),
+                    'size' => $file->getSize(),
+                ]);
+            }
+        }
 
         return redirect()->route('tickets.index');
     }
