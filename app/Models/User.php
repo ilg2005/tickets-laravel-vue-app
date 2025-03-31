@@ -60,4 +60,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Followup::class);
     }
+
+    /**
+     * Get the ticket files for the user.
+     */
+    public function ticketFiles(): HasMany
+    {
+        return $this->hasMany(TicketFile::class);
+    }
 }

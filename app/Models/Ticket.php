@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ticket extends Model
 {
@@ -31,5 +32,13 @@ class Ticket extends Model
     public function followups()
     {
         return $this->hasMany(Followup::class);
+    }
+
+    /**
+     * Get the files for the ticket.
+     */
+    public function files(): HasMany
+    {
+        return $this->hasMany(TicketFile::class);
     }
 }
