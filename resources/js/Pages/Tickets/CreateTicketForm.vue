@@ -6,6 +6,8 @@ import { useToast } from "primevue/usetoast";
 import { usePermission } from '@/Composables/permissions.js';
 import { useConfirm } from "primevue/useconfirm";
 import { usePage } from "@inertiajs/vue3";
+import FollowupsList from '@/Pages/Tickets/Followups/FollowupsList.vue';
+import CreateFollowupForm from '@/Pages/Tickets/Followups/CreateFollowupForm.vue';
 
 const { props } = usePage()
 
@@ -209,6 +211,38 @@ const formatFileSize = (bytes) => {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
+
+// Обработчики событий
+const handleFollowupDelete = (followupId) => {
+    deleteFollowupForm.delete(route("followups.destroy", { id: followupId }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            toast.add({ severity: 'success', summary: 'Success', detail: 'Follow-up deleted', life: 3000 });
+            const index = ticketProps.ticket.followups.findIndex(f => f.id === followupId);
+            if (index !== -1) {
+                ticketProps.ticket.followups.splice(index, 1);
+            }
+        }
+    });
+};
+
+const handleFollowupUpdate = (form) => {
+    form.put(route('followups.update', form.followup_id), {
+        onSuccess: (response) => {
+            const updatedFollowup = response.props.ticket.followups.find(f => f.id === form.followup_id);
+            const index = ticketProps.ticket.followups.findIndex(f => f.id === updatedFollowup.id);
+            if (index !== -1) {
+                ticketProps.ticket.followups.splice(index, 1, updatedFollowup);
+            }
+            toast.add({ severity: 'success', summary: 'Success', detail: 'Follow-up updated', life: 3000 });
+        }
+    });
+};
+
+const handleFollowupCreated = (newFollowup) => {
+    ticketProps.ticket.followups.push(newFollowup);
+    toast.add({ severity: 'success', summary: 'Success', detail: 'Follow-up added', life: 3000 });
+};
 </script>
 
 <template>
@@ -342,106 +376,22 @@ const formatFileSize = (bytes) => {
             </form>
 
             <div class="col-span-2">
-                <div class="" v-if="!isCreate">
-                    <h2 class="text-lg font-semibold mb-4">Followups</h2>
-                    <ul>
-                        <ScrollPanel class="" style="width: 100%;" :dt="{
-                            // bar: {
-                            //     background: '{primary.color}'
-                            // }
-                        }">
-                            <template v-if="ticketProps.ticket.followups.length > 0">
-                                <li v-for="followup in ticketProps.ticket.followups" :key="followup.id" class="mb-4">
-                                    <div class="bg-white shadow rounded-lg p-4">
-                                        <div class="flex justify-between ">
-                                            <div class="flex flex-col">
-                                                <span class="font-medium">{{ followup.user.name }}</span>
-
-                                                <div>
-                                                    <!-- {{ followup.id }} -->
-                                                    <span class="text-sm text-gray-500">{{
-                                                        formatDate(followup.created_at)
-                                                        }}</span>
-
-                                                    <span v-if="followup.created_at !== followup.updated_at"
-                                                        class="text-sm text-gray-400"> - edited</span>
-
-                                                    <!-- <span class="text-sm text-gray-500">{{
-                                                    (formatDate(followup.updated_at))
-                                                }}</span> -->
-                                                </div>
-
-                                            </div>
-                                            <div class="">
-                                                <Tag :style="{ backgroundColor: followup.type === 'comment' ? '#FFBF00' : '#1E90FF' }"
-                                                    style="color: white">
-                                                    {{ followup.type }}
-                                                </Tag>
-                                                <div class="flex justify-end">
-                                                    <Button v-if="isEdit && (followup.user_id === user.id)"
-                                                        icon="pi pi-pencil" text size="small" severity="secondary"
-                                                        @click="startEditingFollowup(followup)" />
-                                                    <Button
-                                                        v-if="(isEdit && isAdmin && canDeleteFollowups) || isEdit && (followup.user_id === user.id)"
-                                                        icon="pi pi-trash" text size="small" severity="danger"
-                                                        @click="() => deleteConfirm(followup.id)" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div v-if="isEditingFollowup === followup.id">
-                                            <textarea v-model="editFollowupForm.content"
-                                                class="block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                                                rows="4"></textarea>
-                                            <InputError :message="editFollowupForm.errors.content" class="mt-2" />
-                                            <div class="flex justify-end gap-2 mt-2">
-                                                <Button label="Cancel" severity="secondary"
-                                                    @click="cancelEditingFollowup" />
-                                                <Button label="Save" severity="primary" @click="saveEditedFollowup" />
-                                            </div>
-                                        </div>
-                                        <p v-else class="mt-2 text-gray-700">{{ followup.content }}</p>
-                                    </div>
-                                </li>
-                            </template>
-                            <template v-else>
-                                <div class="bg-white shadow rounded-lg p-4 text-center">
-                                    <p class="text-gray-500">No followups</p>
-                                </div>
-                            </template>
-                        </ScrollPanel>
-                    </ul>
+                <div v-if="!isCreate">
+                    <FollowupsList
+                        :followups="ticketProps.ticket.followups"
+                        :is-edit="isEdit"
+                        :current-user="user"
+                        @followup-deleted="handleFollowupDelete"
+                        @followup-updated="handleFollowupUpdate"
+                    />
+                    
+                    <CreateFollowupForm
+                        v-if="isEdit"
+                        :ticket-id="ticketProps.ticket.id"
+                        :can-create-solution="canCreateSolutionFollowups"
+                        @created="handleFollowupCreated"
+                    />
                 </div>
-
-                <form @submit.prevent="saveFollowUps" class="w-full" v-if="isEdit">
-                    <div class="gap-4 p-4 grid grid-cols-3">
-                        <div class="mb-4 col-span-2">
-                            <label for="followup-content" class="block text-sm font-medium">Follow-up Content</label>
-                            <textarea v-model="followupForm.content" id="followup-content" :class="[
-                                'block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm'
-                            ]" rows="6"></textarea>
-                            <InputError :message="followupForm.errors.content" class="mt-2" />
-                        </div>
-
-                        <div class="">
-                            <div class="mb-4">
-                                <label for="followup-type" class="block text-sm font-medium">Follow-up Type</label>
-                                <select :disabled="!canCreateSolutionFollowups" v-model="followupForm.type"
-                                    id="followup-type" :class="[
-                                        'block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm'
-                                    ]">
-                                    <option value="comment">Comment</option>
-                                    <option value="solution">Solution</option>
-                                </select>
-                                <InputError :message="followupForm.errors.type" class="mt-2" />
-                            </div>
-                            <div class="flex justify-end gap-2">
-                                <Button label="Cancel" severity="secondary" class="mt-4" type="button"
-                                    @click="followupForm.reset(); followupForm.clearErrors()" />
-                                <Button severity="primary" class="mt-4" type="submit">Add Follow-up</Button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
