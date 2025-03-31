@@ -31,7 +31,8 @@ const ticketProps = defineProps({
             priority: 'medium',
             created_at: '',
             updated_at: '',
-            followups: []
+            followups: [],
+            files: [],
         })
     },
     mode: {
@@ -200,6 +201,14 @@ const deleteConfirm = (followupId) => {
         },
     });
 };
+
+const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
 </script>
 
 <template>
@@ -284,6 +293,28 @@ const deleteConfirm = (followupId) => {
                     <div v-for="(error, index) in form.errors" :key="index">
                         <InputError v-if="index.startsWith('files.')" class="mt-1" :message="error" />
                     </div>
+                </div>
+
+                <div class="mb-4" v-if="(isEdit || isShow) && ticketProps.ticket?.files?.length > 0">
+                    <h3 class="block text-sm font-medium text-gray-700 mb-2">Прикрепленные файлы</h3>
+                    <ul class="list-none p-0 m-0 border border-gray-300 rounded-md divide-y divide-gray-300">
+                        <li v-for="file in ticketProps.ticket.files" :key="file.id" class="p-3 flex justify-between items-center text-sm">
+                            <div class="flex items-center overflow-hidden mr-2">
+                                <i class="pi pi-file mr-2 text-gray-500"></i>
+                                <a :href="route('tickets.files.download', { ticket: ticketProps.ticket.id, ticket_file: file.id })"
+                                   class="text-indigo-600 hover:text-indigo-800 hover:underline truncate"
+                                   :title="file.original_filename">
+                                    {{ file.original_filename }}
+                                </a>
+                            </div>
+                            <div class="flex-shrink-0 text-gray-500 ml-auto pl-2">
+                                 ({{ formatFileSize(file.size) }})
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="mb-4 text-sm text-gray-500" v-else-if="isEdit || isShow">
+                    Нет прикрепленных файлов.
                 </div>
 
                 <template v-if="isEdit || isShow">

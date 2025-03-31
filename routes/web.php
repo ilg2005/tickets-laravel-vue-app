@@ -6,6 +6,7 @@ use App\Http\Controllers\TicketController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\TicketFile;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -34,8 +35,11 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::resource('tickets', TicketController::class)
-    // ->only(['index', 'store'])
     ->middleware(['auth', 'verified']);
+
+Route::get('/tickets/{ticket}/files/{ticket_file}', [TicketController::class, 'downloadFile'])
+    ->middleware(['auth', 'verified'])
+    ->name('tickets.files.download');
 
 Route::middleware(['auth'])->group(function () {
     // Route::post('/followups', [FollowupController::class, 'store'])->middleware('can.create.solution')->name('followups.store');

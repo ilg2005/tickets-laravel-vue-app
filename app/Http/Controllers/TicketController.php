@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\TicketFile;
 // use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -84,12 +85,11 @@ class TicketController extends Controller
         Gate::authorize('view', $ticket);
 
         $ticket->load(['followups' => function ($query) {
-            $query->oldest('created_at'); // Load followups in ascending order by created_at
-        }, 'followups.user']);
+            $query->oldest('created_at');
+        }, 'followups.user', 'files', 'files.user']);
 
         return Inertia::render('Tickets/Show', [
             'ticket' => $ticket,
-            // 'followups' => $ticket->followups,
         ]);
     }
 
@@ -101,8 +101,8 @@ class TicketController extends Controller
         Gate::authorize('update', $ticket);
 
         $ticket->load(['followups' => function ($query) {
-            $query->oldest('created_at'); // Load followups in ascending order by created_at
-        }, 'followups.user']);
+            $query->oldest('created_at');
+        }, 'followups.user', 'files', 'files.user']);
 
         return Inertia::render('Tickets/Edit', ['ticket' => $ticket]);
     }
@@ -144,5 +144,34 @@ class TicketController extends Controller
         $ticket->delete();
 
         return redirect()->route('tickets.index');
+    }
+
+    /**
+     * Handle file download request.
+     *
+     * @param Ticket $ticket The ticket instance from Route Model Binding.
+     * @param TicketFile $ticketFile The ticket file instance from Route Model Binding.
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function downloadFile(Ticket $ticket, TicketFile $ticketFile): \Symfony\Component\HttpFoundation\StreamedResponse|\Illuminate\Http\RedirectResponse
+    {
+        // 1. Проверяем, действительно ли файл принадлежит этому тикету
+        if ($ticketFile->ticket_id !== $ticket->id) {
+            abort(404); // Или другое сообщение об ошибке
+        }
+
+        // 2. Авторизуем пользователя (может ли он видеть этот тикет?)
+        Gate::authorize('view', $ticket);
+
+        // 3. Проверяем, существует ли файл физически
+        if (!Storage::disk('local')->exists($ticketFile->path)) {
+            // Можно добавить логирование или flash-сообщение
+             return redirect()->back()->withErrors(['file_error' => 'File not found on server.']);
+            // abort(404, 'File not found.');
+        }
+
+        // 4. Отдаем файл для скачивания
+        // Storage::download(путь_к_файлу, имя_файла_для_пользователя)
+        return Storage::disk('local')->download($ticketFile->path, $ticketFile->original_filename);
     }
 }
