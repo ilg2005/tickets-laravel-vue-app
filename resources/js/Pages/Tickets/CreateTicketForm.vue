@@ -1,9 +1,8 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3';
+import { useForm, router } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
 import { computed, ref } from 'vue';
 import { useToast } from "primevue/usetoast";
-import { Inertia } from '@inertiajs/inertia'; // Import Inertia
 import { usePermission } from '@/Composables/permissions.js';
 import { useConfirm } from "primevue/useconfirm";
 import { usePage } from "@inertiajs/vue3";
@@ -145,7 +144,7 @@ const createdDate = computed(() => formatDate(ticketProps.ticket?.created_at));
 const updatedDate = computed(() => formatDate(ticketProps.ticket?.updated_at));
 
 const goBack = () => {
-    Inertia.visit(route('tickets.index')); // Replace with your route
+    router.visit(route('tickets.index'));
 };
 
 const deleteConfirm = (followupId) => {
