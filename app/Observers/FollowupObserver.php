@@ -14,6 +14,9 @@ class FollowupObserver
      */
     public function created(Followup $followup): void
     {
+        // Загружаем файлы перед отправкой уведомления
+        $followup->load('files');
+        
         $ticket = $followup->ticket;
         $ticketOwner = $ticket->user;
         $followupCreator = $followup->user;

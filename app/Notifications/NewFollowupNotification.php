@@ -20,7 +20,7 @@ class NewFollowupNotification extends Notification implements ShouldQueue
      */
     public function __construct(Followup $followup)
     {
-        $this->followup = $followup;
+        $this->followup = $followup->load('files');
     }
 
     /**
@@ -44,13 +44,22 @@ class NewFollowupNotification extends Notification implements ShouldQueue
 
         $line = $creator->name . ' добавил ' . ($this->followup->type === 'solution' ? 'решение' : 'комментарий') . ' к тикету №' . $ticket->id . ':';
 
-        return (new MailMessage)
+        $message = (new MailMessage)
                     ->subject('Новый ответ в тикете: ' . $ticket->title)
                     ->greeting('Здравствуйте, ' . $notifiable->name . '!')
                     ->line($line)
-                    ->line('> ' . nl2br(e($this->followup->content)))
-                    ->action('Просмотреть тикет', $url)
-                    ->line('Спасибо за использование нашей системы!');
+                    ->line('> ' . nl2br(e($this->followup->content)));
+                    
+        // Добавляем информацию о файлах, если они есть
+        if ($this->followup->files->count() > 0) {
+            $message->line('К ответу прикреплены файлы:');
+            foreach ($this->followup->files as $file) {
+                $message->line('- ' . $file->original_filename . ' (' . round($file->size / 1024, 2) . ' KB)');
+            }
+        }
+
+        return $message->action('Просмотреть тикет', $url)
+                       ->line('Спасибо за использование нашей системы!');
     }
 
     /**

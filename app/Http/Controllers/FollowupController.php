@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use App\Notifications\NewFollowupNotification;
+use Illuminate\Support\Facades\Notification;
+use App\Models\User;
 
 class FollowupController extends Controller
 {
@@ -62,28 +65,53 @@ class FollowupController extends Controller
             'files.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,zip,rar,txt|max:10240',
         ]);
 
-        $followup = Followup::create([
-            'content' => $request->content,
-            'type' => $request->type,
-            'ticket_id' => $request->ticket_id,
-            'user_id' => Auth::id(),
-        ]);
+        // Отключаем наблюдатель временно
+        Followup::withoutEvents(function () use ($request) {
+            $followup = Followup::create([
+                'content' => $request->content,
+                'type' => $request->type,
+                'ticket_id' => $request->ticket_id,
+                'user_id' => Auth::id(),
+            ]);
 
-        // Обрабатываем загруженные файлы
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store('followup_attachments/' . $followup->id, 'local');
+            // Обрабатываем загруженные файлы
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $file) {
+                    $path = $file->store('followup_attachments/' . $followup->id, 'local');
 
-                $followup->files()->create([
-                    'user_id' => Auth::id(),
-                    'original_filename' => $file->getClientOriginalName(),
-                    'filename' => basename($path),
-                    'path' => $path,
-                    'mime_type' => $file->getClientMimeType(),
-                    'size' => $file->getSize(),
-                ]);
+                    $followup->files()->create([
+                        'user_id' => Auth::id(),
+                        'original_filename' => $file->getClientOriginalName(),
+                        'filename' => basename($path),
+                        'path' => $path,
+                        'mime_type' => $file->getClientMimeType(),
+                        'size' => $file->getSize(),
+                    ]);
+                }
             }
-        }
+
+            // Перезагружаем модель с файлами
+            $followup->load('files', 'ticket', 'user');
+            
+            // Теперь вручную вызываем обработчик уведомлений
+            $ticket = $followup->ticket;
+            $ticketOwner = $ticket->user;
+            $followupCreator = $followup->user;
+
+            if ($ticketOwner->id !== $followupCreator->id) {
+                $ticketOwner->notify(new NewFollowupNotification($followup));
+            }
+
+            $admins = User::whereHas('roles', function ($query) {
+                $query->where('name', 'admin');
+            })->where('id', '!=', $followupCreator->id)->get();
+
+            if ($admins->isNotEmpty()) {
+                Notification::send($admins, new NewFollowupNotification($followup));
+            }
+            
+            return $followup;
+        });
 
         return redirect()->back()->with('success', 'Followup created successfully.');
     }

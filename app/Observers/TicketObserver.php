@@ -16,6 +16,9 @@ class TicketObserver
      */
     public function created(Ticket $ticket): void
     {
+        // Загружаем файлы перед отправкой уведомления
+        $ticket->load('files');
+        
         $ticket->user->notify(new NewTicketNotification($ticket));
 
         $admins = User::whereHas('roles', function ($query) {

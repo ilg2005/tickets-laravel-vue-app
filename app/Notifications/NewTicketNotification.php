@@ -20,7 +20,7 @@ class NewTicketNotification extends Notification implements ShouldQueue
      */
     public function __construct(Ticket $ticket)
     {
-        $this->ticket = $ticket;
+        $this->ticket = $ticket->load('files');
     }
 
     /**
@@ -40,14 +40,23 @@ class NewTicketNotification extends Notification implements ShouldQueue
     {
         $url = url('/tickets/' . $this->ticket->id);
 
-        return (new MailMessage)
+        $message = (new MailMessage)
                     ->subject('Новый тикет создан: ' . $this->ticket->title)
                     ->greeting('Здравствуйте, ' . $notifiable->name . '!')
                     ->line('Был создан новый тикет №' . $this->ticket->id . ' с темой "' . $this->ticket->title . '".')
                     ->line('Статус: ' . $this->ticket->status)
-                    ->line('Приоритет: ' . $this->ticket->priority)
-                    ->action('Просмотреть тикет', $url)
-                    ->line('Спасибо за использование нашей системы!');
+                    ->line('Приоритет: ' . $this->ticket->priority);
+                    
+        // Добавляем информацию о файлах, если они есть
+        if ($this->ticket->files->count() > 0) {
+            $message->line('К тикету прикреплены файлы:');
+            foreach ($this->ticket->files as $file) {
+                $message->line('- ' . $file->original_filename . ' (' . round($file->size / 1024, 2) . ' KB)');
+            }
+        }
+
+        return $message->action('Просмотреть тикет', $url)
+                       ->line('Спасибо за использование нашей системы!');
     }
 
     /**
