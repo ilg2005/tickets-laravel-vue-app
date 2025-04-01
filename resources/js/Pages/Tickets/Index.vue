@@ -168,22 +168,22 @@ const getPriorityColorClass = (priority) => {
                         <Column field="id" header="#" sortable style="width: 5%"></Column>
                         
                         <!-- User column - только для админов -->
-                        <Column v-if="isAdmin" field="user_name" header="User" sortable style="width: 15%">
+                        <Column v-if="isAdmin" field="user_name" header="User" sortable style="width: 10%">
                             <template #body="slotProps">
                                 {{ slotProps.data.user ? slotProps.data.user.name : '-' }}
                             </template>
                         </Column>
                         
-                        <Column field="title" header="Title" sortable style="width: 15%"></Column>
-                        <Column field="description" header="Description" style="width: 35%"></Column>
+                        <Column field="title" header="Title" sortable style="width: 12%"></Column>
+                        <Column field="description" header="Description" style="width: 33%"></Column>
 
-                        <Column field="status" header="Status" sortable style="width: 10%">
+                        <Column field="status" header="Status" sortable style="width: 12%">
                             <template #body="slotProps">
                                 <Tag :value="slotProps.data.status" :severity="getStatusColor(slotProps.data.status)" />
                             </template>
                         </Column>
 
-                        <Column field="priority" header="Priority" sortable style="width: 10%">
+                        <Column field="priority" header="Priority" sortable style="width: 12%">
                             <template #body="slotProps">
                                 <span class="inline-flex items-center">
                                     <i class="pi pi-circle-on" :class="getPriorityColorClass(slotProps.data.priority)" style="margin-right: 0.5rem; font-size: 0.7rem"></i>
@@ -221,6 +221,30 @@ const getPriorityColorClass = (priority) => {
 <style scoped>
 .ticket-table :deep(th), .ticket-table :deep(td) {
     padding: 0.75rem 0.5rem;
+}
+
+/* Стили для выпадающих списков в фильтре */
+:deep(.filter-dropdown) {
+    width: 100%;
+    min-width: 120px;
+}
+
+:deep(.filter-dropdown .p-dropdown-label) {
+    display: block;
+    width: 100%;
+    text-overflow: clip;
+    white-space: normal;
+}
+
+/* Полностью показываем текст в выпадающих списках */
+:deep(.p-dropdown-panel .p-dropdown-items .p-dropdown-item) {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Корректируем ширину выпадающего списка */
+:deep(.p-dropdown-panel) {
+    min-width: 150px;
 }
 
 @media (max-width: 768px) {

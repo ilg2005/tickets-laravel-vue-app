@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
+import Select from 'primevue/select';
 
 const props = defineProps({
     filters: {
@@ -73,60 +74,70 @@ const resetFilters = () => {
     }
     emit('reset-filters');
 };
+
+onMounted(() => {
+    if (props.isAdmin) {
+        document.documentElement.classList.add('admin-active');
+    }
+});
+
+onUnmounted(() => {
+    document.documentElement.classList.remove('admin-active');
+});
 </script>
 
 <template>
-    <div class="filter-container px-0 py-4 mb-4">
-        <div class="table-layout">
-            <table class="filter-table">
-                <thead>
-                    <tr>
-                        <th class="id-column">
-                            <InputText v-model="id" placeholder="ID" class="w-full" @input="emitChanges" />
-                        </th>
-                        <!-- User column - только для админов -->
-                        <th v-if="isAdmin" class="user-column">
-                            <InputText v-model="user_name" placeholder="Search by user" class="w-full" @input="emitChanges" />
-                        </th>
-                        <th class="title-column">
-                            <InputText v-model="title" placeholder="Search by title" class="w-full" @input="emitChanges" />
-                        </th>
-                        <th class="description-column">
-                            <InputText v-model="description" placeholder="Search by description" class="w-full" @input="emitChanges" />
-                        </th>
-                        <th class="status-column">
-                            <Select 
-                                v-model="status" 
-                                :options="statusOptions" 
-                                optionLabel="label" 
-                                placeholder="Status" 
-                                class="w-full" 
-                                @change="emitChanges"
-                            />
-                        </th>
-                        <th class="priority-column">
-                            <Select 
-                                v-model="priority" 
-                                :options="priorityOptions" 
-                                optionLabel="label" 
-                                placeholder="Priority" 
-                                class="w-full" 
-                                @change="emitChanges"
-                            />
-                        </th>
-                        <th class="actions-column text-center">
-                            <Button 
-                                icon="pi pi-filter-slash" 
-                                severity="secondary" 
-                                outlined 
-                                @click="resetFilters" 
-                                tooltip="Reset filters" 
-                                :tooltipOptions="{ position: 'top' }"
-                            />
-                        </th>
-                    </tr>
-                </thead>
-            </table>
+    <div class="filter-container px-2 py-4 mb-4">
+        <div class="grid-filter-container">
+            <div class="id-cell">
+                <InputText v-model="id" placeholder="ID" class="w-full" @input="emitChanges" />
+            </div>
+            
+            <div v-if="isAdmin" class="user-cell">
+                <InputText v-model="user_name" placeholder="User" class="w-full" @input="emitChanges" />
+            </div>
+            
+            <div class="title-cell">
+                <InputText v-model="title" placeholder="Title" class="w-full" @input="emitChanges" />
+            </div>
+            
+            <div class="description-cell">
+                <InputText v-model="description" placeholder="Description" class="w-full" @input="emitChanges" />
+            </div>
+            
+            <div class="status-cell">
+                <Select 
+                    v-model="status" 
+                    :options="statusOptions" 
+                    optionLabel="label" 
+                    placeholder="Status" 
+                    class="w-full" 
+                    @change="emitChanges"
+                />
+            </div>
+            
+            <div class="priority-cell">
+                <Select 
+                    v-model="priority" 
+                    :options="priorityOptions" 
+                    optionLabel="label" 
+                    placeholder="Priority" 
+                    class="w-full" 
+                    @change="emitChanges"
+                />
+            </div>
+            
+            <div class="actions-cell">
+                <Button 
+                    icon="pi pi-filter-slash" 
+                    severity="secondary" 
+                    outlined 
+                    @click="resetFilters" 
+                    tooltip="Reset filters" 
+                    :tooltipOptions="{ position: 'top' }"
+                    class="w-full"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -137,50 +148,25 @@ const resetFilters = () => {
     border: none;
 }
 
-.table-layout {
-    width: 100%;
-    overflow-x: auto;
+.grid-filter-container {
+    display: grid;
+    grid-template-columns: 5% 10% 12% 33% 12% 12% 10%;
+    gap: 8px;
+    align-items: center;
 }
 
-.filter-table {
-    width: 100%;
-    table-layout: fixed;
-    border-collapse: collapse;
+/* Если админ не активирован, скрываем колонку user */
+:root:not(.admin-active) .grid-filter-container {
+    grid-template-columns: 5% 0% 12% 43% 12% 12% 10%;
 }
 
-.filter-table th {
-    padding: 0 0.5rem;
-    font-weight: normal;
-}
-
-/* Колонки точно как в таблице данных */
-.id-column {
-    width: 5%;
-    min-width: 50px;
-}
-
-.user-column {
-    width: 15%;
-    min-width: 120px;
-}
-
-.title-column {
-    width: 15%;
-}
-
-.description-column {
-    width: 35%;
-}
-
-.status-column, .priority-column {
-    width: 10%;
-    min-width: 120px;
-}
-
-.actions-column {
-    width: 10%;
-    min-width: 100px;
-}
+.id-cell { grid-column: 1; }
+.user-cell { grid-column: 2; }
+.title-cell { grid-column: 3; }
+.description-cell { grid-column: 4; }
+.status-cell { grid-column: 5; }
+.priority-cell { grid-column: 6; }
+.actions-cell { grid-column: 7; }
 
 /* Стили для инпутов, чтобы они выглядели единообразно */
 :deep(.p-inputtext),
@@ -189,31 +175,16 @@ const resetFilters = () => {
     height: 2.5rem;
 }
 
-/* Для мобильных устройств можно скрыть некоторые фильтры или изменить layout */
+/* Адаптивная верстка для мобильных устройств */
 @media (max-width: 768px) {
-    .filter-table {
+    .grid-filter-container {
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
+        gap: 12px;
     }
     
-    .filter-table thead {
-        width: 100%;
-    }
-    
-    .filter-table tr {
-        display: flex;
-        flex-wrap: wrap;
-        width: 100%;
-    }
-    
-    .filter-table th {
-        display: block;
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-    
-    .id-column, .user-column, .title-column, .description-column,
-    .status-column, .priority-column, .actions-column {
+    .id-cell, .user-cell, .title-cell, .description-cell,
+    .status-cell, .priority-cell, .actions-cell {
         width: 100%;
     }
 }
