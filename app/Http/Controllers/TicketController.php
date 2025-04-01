@@ -17,18 +17,58 @@ class TicketController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $user = auth()->user();
-
-        if ($user->hasRole('admin')) {
-            $tickets = Ticket::with('user:id')->latest('updated_at')->get();
-        } else {
-            $tickets = Ticket::with('user:id')->where('user_id', $user->id)->latest('updated_at')->get();
+        
+        // Base query depending on user role
+        $query = Ticket::with('user:id');
+        
+        if (!$user->hasRole('admin')) {
+            $query->where('user_id', $user->id);
         }
-
+        
+        // Apply filters
+        $filters = $request->input('filters', []);
+        
+        if (!empty($filters)) {
+            if (!empty($filters['id'])) {
+                $query->where('id', 'like', $filters['id'] . '%');
+            }
+            
+            if (!empty($filters['title'])) {
+                $query->where('title', 'like', '%' . $filters['title'] . '%');
+            }
+            
+            if (!empty($filters['description'])) {
+                $query->where('description', 'like', '%' . $filters['description'] . '%');
+            }
+            
+            if (isset($filters['status']) && $filters['status'] !== null && $filters['status'] !== '') {
+                $query->where('status', $filters['status']);
+            }
+            
+            if (isset($filters['priority']) && $filters['priority'] !== null && $filters['priority'] !== '') {
+                $query->where('priority', $filters['priority']);
+            }
+        }
+        
+        // Apply sorting
+        $sortField = $request->input('sort.field', 'updated_at');
+        $sortOrder = $request->input('sort.order', 'desc');
+        
+        $query->orderBy($sortField, $sortOrder);
+        
+        // Get results
+        $tickets = $query->get();
+        
         return Inertia::render('Tickets/Index', [
             'tickets' => $tickets,
+            'filters' => $filters,
+            'sort' => [
+                'field' => $sortField,
+                'order' => $sortOrder
+            ]
         ]);
     }
 

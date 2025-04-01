@@ -1,22 +1,67 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { useForm, Head, Link, usePage } from '@inertiajs/vue3';
+import { useForm, Head, Link, usePage, router } from '@inertiajs/vue3';
 import CreateTicketForm from './CreateTicketForm.vue';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import { usePermission } from '@/Composables/permissions.js';
+import TicketFilter from '@/Pages/Tickets/TicketFilter.vue';
+import { ref, watch } from 'vue';
 
 const confirm = useConfirm();
 const toast = useToast();
 
-const { props } = usePage();
-const { flash } = props;
+const page = usePage();
+const { flash } = page.props;
 
-defineProps(['tickets']);
+const props = defineProps({
+    tickets: Array,
+    filters: {
+        type: Object,
+        default: () => ({})
+    },
+    sort: {
+        type: Object,
+        default: () => ({ field: 'updated_at', order: 'desc' })
+    }
+});
 
 const form = useForm({
     message: '',
 });
+
+const filters = ref(props.filters || {});
+const sort = ref(props.sort || { field: 'updated_at', order: 'desc' });
+
+const handleFilterChange = (newFilters) => {
+    filters.value = newFilters;
+    applyFilters();
+};
+
+const resetFilters = () => {
+    filters.value = {};
+    sort.value = { field: 'updated_at', order: 'desc' };
+    applyFilters();
+};
+
+const onSort = (event) => {
+    sort.value = {
+        field: event.sortField,
+        order: event.sortOrder === 1 ? 'asc' : 'desc'
+    };
+    applyFilters();
+};
+
+const applyFilters = () => {
+    router.get(route('tickets.index'), {
+        filters: filters.value,
+        sort: sort.value
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true
+    });
+};
 
 const deleteConfirm = (id) => {
     confirm.require({
@@ -85,11 +130,28 @@ const getPriorityColorClass = (priority) => {
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <DataTable :value="tickets" stripedRows paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
-                        tableStyle="min-width: 50rem"
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <!-- Filter component -->
+                    <TicketFilter 
+                        :filters="filters" 
+                        @filter-change="handleFilterChange" 
+                        @reset-filters="resetFilters" 
+                    />
+                    
+                    <DataTable 
+                        :value="tickets" 
+                        stripedRows 
+                        paginator 
+                        :rows="5" 
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        tableStyle="min-width: 50rem; width: 100%;"
                         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-                        currentPageReportTemplate="{first} to {last} of {totalRecords}">
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        :sortField="sort.field"
+                        :sortOrder="sort.order === 'asc' ? 1 : -1"
+                        @sort="onSort"
+                        class="ticket-table"
+                    >
 
                         <template #header>
                             <div class="flex flex-wrap items-center justify-end gap-2 min-h-8">
@@ -99,26 +161,26 @@ const getPriorityColorClass = (priority) => {
                             </div>
                         </template>
 
-                        <Column field="id" header="#"></Column>
-                        <Column field="title" header="Title"></Column>
-                        <Column field="description" header="Description"></Column>
+                        <Column field="id" header="#" sortable style="width: 5%"></Column>
+                        <Column field="title" header="Title" sortable style="width: 20%"></Column>
+                        <Column field="description" header="Description" style="width: 40%"></Column>
 
-                        <Column field="status" header="Status">
+                        <Column field="status" header="Status" sortable style="width: 12%">
                             <template #body="slotProps">
                                 <Tag :value="slotProps.data.status" :severity="getStatusColor(slotProps.data.status)" />
                             </template>
                         </Column>
 
-                        <Column field="priority" header="Priority">
+                        <Column field="priority" header="Priority" sortable style="width: 12%">
                             <template #body="slotProps">
                                 <span class="inline-flex items-center">
-                                    <i  class="pi pi-circle-on" :class="getPriorityColorClass(slotProps.data.priority)" style="margin-right: 0.5rem; font-size: 0.7rem"></i>
+                                    <i class="pi pi-circle-on" :class="getPriorityColorClass(slotProps.data.priority)" style="margin-right: 0.5rem; font-size: 0.7rem"></i>
                                     {{ slotProps.data.priority }}
                                 </span>
                             </template>
                         </Column>
 
-                        <Column header="Actions">
+                        <Column header="Actions" style="width: 11%">
                             <template #body="slotProps">
                                 <div class="flex">
                                     <Link :href="route('tickets.show', slotProps.data.id)">
@@ -143,3 +205,13 @@ const getPriorityColorClass = (priority) => {
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.ticket-table :deep(th), .ticket-table :deep(td) {
+    padding: 0.75rem 0.5rem;
+}
+
+@media (max-width: 768px) {
+    /* Мобильные стили для таблицы */
+}
+</style>
