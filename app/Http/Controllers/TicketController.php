@@ -22,16 +22,16 @@ class TicketController extends Controller
         $user = auth()->user();
         
         // Base query depending on user role
-        $query = Ticket::with('user:id');
+        $query = Ticket::with('user');  // Загружаем полные данные пользователя
         
         if (!$user->hasRole('admin')) {
             $query->where('user_id', $user->id);
         }
         
         // Apply filters
-        $filters = $request->input('filters', []);
-        
-        if (!empty($filters)) {
+        if ($request->has('filters')) {
+            $filters = $request->filters;
+            
             if (!empty($filters['id'])) {
                 $query->where('id', 'like', $filters['id'] . '%');
             }
@@ -51,24 +51,42 @@ class TicketController extends Controller
             if (isset($filters['priority']) && $filters['priority'] !== null && $filters['priority'] !== '') {
                 $query->where('priority', $filters['priority']);
             }
+            
+            // Фильтрация по имени пользователя (для админов)
+            if ($user->hasRole('admin') && !empty($filters['user_name'])) {
+                $query->whereHas('user', function ($q) use ($filters) {
+                    $q->where('name', 'like', '%' . $filters['user_name'] . '%');
+                });
+            }
         }
         
         // Apply sorting
         $sortField = $request->input('sort.field', 'updated_at');
         $sortOrder = $request->input('sort.order', 'desc');
         
-        $query->orderBy($sortField, $sortOrder);
+        if ($sortField === 'user_name') {
+            // Сортировка по имени пользователя через join
+            $query->join('users', 'tickets.user_id', '=', 'users.id')
+                  ->orderBy('users.name', $sortOrder)
+                  ->select('tickets.*');
+        } else {
+            $query->orderBy($sortField, $sortOrder);
+        }
         
         // Get results
         $tickets = $query->get();
         
+        // Проверяем, является ли пользователь администратором
+        $isAdmin = $user->hasRole('admin');
+        
         return Inertia::render('Tickets/Index', [
             'tickets' => $tickets,
-            'filters' => $filters,
+            'filters' => $request->input('filters', []),
             'sort' => [
                 'field' => $sortField,
                 'order' => $sortOrder
-            ]
+            ],
+            'isAdmin' => $isAdmin
         ]);
     }
 

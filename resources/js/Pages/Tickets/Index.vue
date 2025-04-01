@@ -6,7 +6,7 @@ import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import { usePermission } from '@/Composables/permissions.js';
 import TicketFilter from '@/Pages/Tickets/TicketFilter.vue';
-import { ref, watch } from 'vue';
+import { ref, computed } from 'vue';
 
 const confirm = useConfirm();
 const toast = useToast();
@@ -23,6 +23,10 @@ const props = defineProps({
     sort: {
         type: Object,
         default: () => ({ field: 'updated_at', order: 'desc' })
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -134,6 +138,7 @@ const getPriorityColorClass = (priority) => {
                     <!-- Filter component -->
                     <TicketFilter 
                         :filters="filters" 
+                        :is-admin="isAdmin"
                         @filter-change="handleFilterChange" 
                         @reset-filters="resetFilters" 
                     />
@@ -152,7 +157,6 @@ const getPriorityColorClass = (priority) => {
                         @sort="onSort"
                         class="ticket-table"
                     >
-
                         <template #header>
                             <div class="flex flex-wrap items-center justify-end gap-2 min-h-8">
                                 <Link v-if="isUser" :href="route('tickets.create')">
@@ -162,16 +166,24 @@ const getPriorityColorClass = (priority) => {
                         </template>
 
                         <Column field="id" header="#" sortable style="width: 5%"></Column>
-                        <Column field="title" header="Title" sortable style="width: 20%"></Column>
-                        <Column field="description" header="Description" style="width: 40%"></Column>
+                        
+                        <!-- User column - только для админов -->
+                        <Column v-if="isAdmin" field="user_name" header="User" sortable style="width: 15%">
+                            <template #body="slotProps">
+                                {{ slotProps.data.user ? slotProps.data.user.name : '-' }}
+                            </template>
+                        </Column>
+                        
+                        <Column field="title" header="Title" sortable style="width: 15%"></Column>
+                        <Column field="description" header="Description" style="width: 35%"></Column>
 
-                        <Column field="status" header="Status" sortable style="width: 12%">
+                        <Column field="status" header="Status" sortable style="width: 10%">
                             <template #body="slotProps">
                                 <Tag :value="slotProps.data.status" :severity="getStatusColor(slotProps.data.status)" />
                             </template>
                         </Column>
 
-                        <Column field="priority" header="Priority" sortable style="width: 12%">
+                        <Column field="priority" header="Priority" sortable style="width: 10%">
                             <template #body="slotProps">
                                 <span class="inline-flex items-center">
                                     <i class="pi pi-circle-on" :class="getPriorityColorClass(slotProps.data.priority)" style="margin-right: 0.5rem; font-size: 0.7rem"></i>
@@ -180,7 +192,7 @@ const getPriorityColorClass = (priority) => {
                             </template>
                         </Column>
 
-                        <Column header="Actions" style="width: 11%">
+                        <Column header="Actions" style="width: 10%">
                             <template #body="slotProps">
                                 <div class="flex">
                                     <Link :href="route('tickets.show', slotProps.data.id)">

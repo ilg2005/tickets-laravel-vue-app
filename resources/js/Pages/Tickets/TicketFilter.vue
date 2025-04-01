@@ -7,6 +7,10 @@ const props = defineProps({
     filters: {
         type: Object,
         default: () => ({})
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -29,6 +33,7 @@ const title = ref(props.filters.title || '');
 const description = ref(props.filters.description || '');
 const status = ref(null);
 const priority = ref(null);
+const user_name = ref(props.filters.user_name || '');
 
 // Set initial status based on props
 if (props.filters.status) {
@@ -41,13 +46,20 @@ if (props.filters.priority) {
 }
 
 const emitChanges = () => {
-    emit('filter-change', {
+    const filters = {
         id: id.value,
         title: title.value,
         description: description.value,
         status: status.value ? status.value.value : null,
         priority: priority.value ? priority.value.value : null
-    });
+    };
+    
+    // Добавляем фильтрацию по имени пользователя только для админов
+    if (props.isAdmin) {
+        filters.user_name = user_name.value;
+    }
+    
+    emit('filter-change', filters);
 };
 
 const resetFilters = () => {
@@ -56,6 +68,9 @@ const resetFilters = () => {
     description.value = '';
     status.value = null;
     priority.value = null;
+    if (props.isAdmin) {
+        user_name.value = '';
+    }
     emit('reset-filters');
 };
 </script>
@@ -68,6 +83,10 @@ const resetFilters = () => {
                     <tr>
                         <th class="id-column">
                             <InputText v-model="id" placeholder="ID" class="w-full" @input="emitChanges" />
+                        </th>
+                        <!-- User column - только для админов -->
+                        <th v-if="isAdmin" class="user-column">
+                            <InputText v-model="user_name" placeholder="Search by user" class="w-full" @input="emitChanges" />
                         </th>
                         <th class="title-column">
                             <InputText v-model="title" placeholder="Search by title" class="w-full" @input="emitChanges" />
@@ -140,21 +159,26 @@ const resetFilters = () => {
     min-width: 50px;
 }
 
+.user-column {
+    width: 15%;
+    min-width: 120px;
+}
+
 .title-column {
-    width: 20%;
+    width: 15%;
 }
 
 .description-column {
-    width: 40%;
+    width: 35%;
 }
 
 .status-column, .priority-column {
-    width: 12%;
+    width: 10%;
     min-width: 120px;
 }
 
 .actions-column {
-    width: 11%;
+    width: 10%;
     min-width: 100px;
 }
 
@@ -188,7 +212,7 @@ const resetFilters = () => {
         margin-bottom: 0.5rem;
     }
     
-    .id-column, .title-column, .description-column,
+    .id-column, .user-column, .title-column, .description-column,
     .status-column, .priority-column, .actions-column {
         width: 100%;
     }
