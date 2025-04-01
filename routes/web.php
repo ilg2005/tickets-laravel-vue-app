@@ -7,6 +7,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\TicketFile;
+use App\Http\Controllers\FileController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -48,6 +49,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/followups/{followup}', [FollowupController::class, 'show'])->name('followups.show');
     Route::put('/followups/{followup}', [FollowupController::class, 'update'])->name('followups.update');
     Route::delete('/followups/{followup}', [FollowupController::class, 'destroy'])->name('followups.destroy');
+    Route::get('/followups/{followup}/files/{followup_file}', [FollowupController::class, 'downloadFile'])
+        ->middleware(['auth', 'verified'])
+        ->name('followups.files.download');
 });
+
+// Добавить общий маршрут для скачивания файлов
+Route::get('/files/{file_type}/{file_id}', [FileController::class, 'download'])
+    ->middleware(['auth', 'verified'])
+    ->name('files.download');
 
 require __DIR__.'/auth.php';

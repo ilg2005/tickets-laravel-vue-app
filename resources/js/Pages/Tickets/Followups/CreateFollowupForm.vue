@@ -1,5 +1,5 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3';
+import { useForm, router } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
 import Button from 'primevue/button';
 
@@ -14,21 +14,34 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['created']);
+const emit = defineEmits(['created', 'files-updated']);
 
 const form = useForm({
     content: '',
     type: 'comment',
-    ticket_id: props.ticketId
+    ticket_id: props.ticketId,
+    files: []
 });
 
 const submit = () => {
     form.post(route('followups.store'), {
-        onSuccess: (response) => {
-            emit('created', response.props.ticket.followups[response.props.ticket.followups.length - 1]);
-            form.reset();
-        }
+        onSuccess: () => {
+            // Простая перезагрузка страницы после успешного добавления
+            window.location.reload();
+        },
+        forceFormData: true
     });
+};
+
+const handleFileChange = (e) => {
+    form.files = e.target.files;
+};
+
+// Функция для форматирования размера файлов
+const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+    else return (bytes / 1048576).toFixed(2) + ' MB';
 };
 </script>
 
@@ -54,6 +67,31 @@ const submit = () => {
                     </select>
                     <InputError :message="form.errors.type" class="mt-2" />
                 </div>
+                
+                <div class="mb-4">
+                    <label for="files" class="block text-sm font-medium">Прикрепить файлы</label>
+                    <p class="text-xs text-gray-500 mb-1">Макс. 10MB на файл. Разрешены: jpg, png, pdf, doc(x), zip, rar, txt</p>
+                    <input
+                        id="files"
+                        type="file"
+                        multiple
+                        @change="handleFileChange"
+                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 border border-gray-300 rounded-md shadow-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    <div v-if="form.files && form.files.length > 0" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        <p>Выбранные файлы:</p>
+                        <ul>
+                            <li v-for="file in Array.from(form.files)" :key="file.name">
+                                {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
+                            </li>
+                        </ul>
+                    </div>
+                    <InputError class="mt-2" :message="form.errors.files" />
+                    <div v-for="(error, index) in form.errors" :key="index">
+                        <InputError v-if="index.startsWith('files.')" class="mt-1" :message="error" />
+                    </div>
+                </div>
+                
                 <div class="flex justify-end gap-2">
                     <Button label="Cancel" severity="secondary" type="button"
                         @click="form.reset(); form.clearErrors()" />

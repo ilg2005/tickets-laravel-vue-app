@@ -86,10 +86,14 @@ class TicketController extends Controller
 
         $ticket->load(['followups' => function ($query) {
             $query->oldest('created_at');
-        }, 'followups.user', 'files', 'files.user']);
+        }, 'followups.user', 'followups.files', 'files', 'files.user']);
+
+        // Получаем все файлы (тикета и follow-up)
+        $allFiles = $ticket->getAllFiles();
 
         return Inertia::render('Tickets/Show', [
             'ticket' => $ticket,
+            'allFiles' => $allFiles,
         ]);
     }
 
@@ -102,9 +106,15 @@ class TicketController extends Controller
 
         $ticket->load(['followups' => function ($query) {
             $query->oldest('created_at');
-        }, 'followups.user', 'files', 'files.user']);
+        }, 'followups.user', 'followups.files', 'files', 'files.user']);
 
-        return Inertia::render('Tickets/Edit', ['ticket' => $ticket]);
+        // Получаем все файлы (тикета и follow-up)
+        $allFiles = $ticket->getAllFiles();
+
+        return Inertia::render('Tickets/Edit', [
+            'ticket' => $ticket,
+            'allFiles' => $allFiles,
+        ]);
     }
 
     /**

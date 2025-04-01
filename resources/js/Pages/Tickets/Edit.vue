@@ -17,7 +17,7 @@ const { props } = usePage();
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <CreateTicketForm :ticket="props.ticket" mode="edit" />
+                    <CreateTicketForm :ticket="props.ticket" :all-files="props.allFiles" mode="edit" />
                 </div>
             </div>
         </div>

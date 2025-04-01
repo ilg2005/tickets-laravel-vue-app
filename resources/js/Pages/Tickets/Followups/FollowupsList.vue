@@ -4,6 +4,8 @@ import FollowupItem from './FollowupItem.vue';
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import ScrollPanel from 'primevue/scrollpanel';
+import { router } from '@inertiajs/vue3';
+import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps({
     followups: {
@@ -24,13 +26,19 @@ const emit = defineEmits(['followupDeleted', 'followupUpdated']);
 
 const toast = useToast();
 const confirm = useConfirm();
+const page = usePage();
 
 const deleteConfirm = (followupId) => {
     confirm.require({
         message: 'Are you sure you want to proceed?',
         header: 'Confirmation',
         icon: 'pi pi-exclamation-triangle',
-        accept: () => emit('followupDeleted', followupId),
+        accept: () => {
+            emit('followupDeleted', followupId);
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        },
         reject: () => {},
         acceptLabel: 'Yes',
         rejectLabel: 'No',

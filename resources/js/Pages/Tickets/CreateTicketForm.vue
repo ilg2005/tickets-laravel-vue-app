@@ -1,7 +1,7 @@
 <script setup>
 import { useForm, router } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useToast } from "primevue/usetoast";
 import { usePermission } from '@/Composables/permissions.js';
 import { useConfirm } from "primevue/useconfirm";
@@ -37,6 +37,10 @@ const ticketProps = defineProps({
             files: [],
         })
     },
+    allFiles: {
+        type: Array,
+        default: () => []
+    },
     mode: {
         type: String,
         default: 'create'
@@ -65,6 +69,14 @@ const isShow = computed(() => ticketProps.mode === 'show');
 const isDisabled = computed(() => ticketProps.mode === 'show');
 
 const fileInput = ref(null);
+
+// Добавим реактивный массив для хранения списка файлов
+const allFiles = ref(props.allFiles || []);
+
+// Слушаем изменения пропса allFiles
+watch(() => props.allFiles, (newFiles) => {
+    allFiles.value = newFiles;
+}, { deep: true });
 
 function handleFileChange(event) {
     form.files = event.target.files;
@@ -243,6 +255,11 @@ const handleFollowupCreated = (newFollowup) => {
     ticketProps.ticket.followups.push(newFollowup);
     toast.add({ severity: 'success', summary: 'Success', detail: 'Follow-up added', life: 3000 });
 };
+
+// Функция обработки обновления списка файлов
+const handleFilesUpdated = (updatedFiles) => {
+    allFiles.value = updatedFiles;
+};
 </script>
 
 <template>
@@ -329,16 +346,22 @@ const handleFollowupCreated = (newFollowup) => {
                     </div>
                 </div>
 
-                <div class="mb-4" v-if="(isEdit || isShow) && ticketProps.ticket?.files?.length > 0">
+                <div class="mb-4" v-if="(isEdit || isShow) && allFiles.length > 0">
                     <h3 class="block text-sm font-medium text-gray-700 mb-2">Прикрепленные файлы</h3>
                     <ul class="list-none p-0 m-0 border border-gray-300 rounded-md divide-y divide-gray-300">
-                        <li v-for="file in ticketProps.ticket.files" :key="file.id" class="p-3 flex justify-between items-center text-sm">
+                        <li v-for="file in allFiles" :key="`${file.is_followup ? 'followup' : 'ticket'}-${file.id}`" 
+                            class="p-3 flex justify-between items-center text-sm">
                             <div class="flex items-center overflow-hidden mr-2">
                                 <i class="pi pi-file mr-2 text-gray-500"></i>
-                                <a :href="route('tickets.files.download', { ticket: ticketProps.ticket.id, ticket_file: file.id })"
+                                <a :href="file.is_followup 
+                                        ? route('files.download', { file_type: 'followup', file_id: file.id })
+                                        : route('files.download', { file_type: 'ticket', file_id: file.id })"
                                    class="text-indigo-600 hover:text-indigo-800 hover:underline truncate"
                                    :title="file.original_filename">
                                     {{ file.original_filename }}
+                                    <span v-if="file.is_followup" class="text-gray-500 text-xs">
+                                        (из комментария от {{ formatDate(file.followup_created_at) }})
+                                    </span>
                                 </a>
                             </div>
                             <div class="flex-shrink-0 text-gray-500 ml-auto pl-2">
@@ -390,6 +413,7 @@ const handleFollowupCreated = (newFollowup) => {
                         :ticket-id="ticketProps.ticket.id"
                         :can-create-solution="canCreateSolutionFollowups"
                         @created="handleFollowupCreated"
+                        @files-updated="handleFilesUpdated"
                     />
                 </div>
             </div>
