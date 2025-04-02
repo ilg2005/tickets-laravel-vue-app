@@ -34,23 +34,6 @@ class FollowupController extends Controller
         $this->fileService = $fileService;
     }
 
-    public function index(Ticket $ticket)
-    {
-        $followups = $ticket->followups()->with('files')->get();
-        return Inertia::render('Followups/Index', [
-            'followups' => $followups,
-            'ticket' => $ticket,
-        ]);
-    }
-
-    public function show(Followup $followup)
-    {
-        $followup->load('files');
-        return Inertia::render('Followups/Show', [
-            'followup' => $followup,
-        ]);
-    }
-
     public function store(Request $request)
     {
         Gate::authorize('create', Followup::class);

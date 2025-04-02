@@ -41,8 +41,6 @@ Route::resource('tickets', TicketController::class)
 Route::middleware(['auth'])->group(function () {
     // Route::post('/followups', [FollowupController::class, 'store'])->middleware('can.create.solution')->name('followups.store');
     Route::post('/followups', [FollowupController::class, 'store'])->name('followups.store');
-    Route::get('/tickets/{ticket}/followups', [FollowupController::class, 'index'])->name('followups.index');
-    Route::get('/followups/{followup}', [FollowupController::class, 'show'])->name('followups.show');
     Route::put('/followups/{followup}', [FollowupController::class, 'update'])->name('followups.update');
     Route::delete('/followups/{followup}', [FollowupController::class, 'destroy'])->name('followups.destroy');
     
