@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class FileService
 {
@@ -145,5 +146,37 @@ class FileService
     public function fileExists(string $path): bool
     {
         return Storage::disk($this->disk)->exists($path);
+    }
+
+    /**
+     * Валидирует файлы в соответствии с требованиями
+     *
+     * @param array $files Файлы для валидации
+     * @return array Правила валидации
+     */
+    public function getFileValidationRules(): array
+    {
+        return [
+            'files' => 'nullable|array',
+            'files.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,zip,rar,txt|max:10240',
+        ];
+    }
+
+    /**
+     * Выполняет валидацию и загрузку файлов для модели
+     *
+     * @param Model $model Модель, к которой прикрепляются файлы
+     * @param Request $request Запрос, содержащий файлы
+     * @return void
+     */
+    public function validateAndUpload(Model $model, $request): void
+    {
+        // Валидируем файлы, используя стандартные правила
+        $request->validate($this->getFileValidationRules());
+        
+        // Загружаем файлы, если они существуют
+        if ($request->hasFile('files')) {
+            $this->uploadFiles($model, $request->file('files'));
+        }
     }
 }

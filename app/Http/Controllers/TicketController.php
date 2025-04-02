@@ -66,23 +66,19 @@ class TicketController extends Controller
     {
         Gate::authorize('create', Ticket::class);
 
+        // Валидируем основные поля (без файлов)
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'status' => 'required|string|in:open,in_progress,closed',
             'priority' => 'required|string|in:low,medium,high',
-            'files' => 'nullable|array',
-            'files.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,zip,rar,txt|max:10240',
         ]);
-
-        $ticketData = collect($validated)->except('files')->toArray();
-        $ticket = $request->user()->tickets()->create($ticketData);
-
-        // Используем FileService для загрузки файлов
-        if ($request->hasFile('files')) {
-            $this->fileService->uploadFiles($ticket, $request->file('files'));
-        }
-
+        
+        $ticket = $request->user()->tickets()->create($validated);
+        
+        // Используем единый метод для валидации и загрузки файлов
+        $this->fileService->validateAndUpload($ticket, $request);
+        
         return redirect()->route('tickets.index');
     }
 

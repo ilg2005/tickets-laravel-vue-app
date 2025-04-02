@@ -16,14 +16,14 @@ use Inertia\Inertia;
 class FollowupController extends Controller
 {
     /**
-     * Сервис для работы с файлами
+     * Service for file operations
      *
      * @var FileService
      */
     protected FileService $fileService;
 
     /**
-     * Конструктор контроллера с внедрением зависимости FileService
+     * Controller constructor with FileService dependency injection
      *
      * @param FileService $fileService
      */
@@ -73,15 +73,14 @@ class FollowupController extends Controller
             }
         }
 
+        // Валидируем основные поля (без файлов)
         $request->validate([
             'content' => 'required|string',
             'type' => 'required|string|in:comment,solution',
             'ticket_id' => 'required|exists:tickets,id',
-            'files' => 'nullable|array',
-            'files.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,zip,rar,txt|max:10240',
         ]);
 
-        // Отключаем наблюдатель временно
+        // Временно отключаем события модели для ручной обработки уведомлений
         Followup::withoutEvents(function () use ($request) {
             $followup = Followup::create([
                 'content' => $request->content,
@@ -90,10 +89,8 @@ class FollowupController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
-            // Используем FileService для загрузки файлов
-            if ($request->hasFile('files')) {
-                $this->fileService->uploadFiles($followup, $request->file('files'));
-            }
+            // Используем FileService для валидации и загрузки файлов
+            $this->fileService->validateAndUpload($followup, $request);
 
             // Перезагружаем модель с файлами
             $followup->load('files', 'ticket', 'user');
