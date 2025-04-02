@@ -8,7 +8,8 @@ use App\Models\Ticket;
 use App\Models\Followup;
 use App\Observers\TicketObserver;
 use App\Observers\FollowupObserver;
-
+use App\Services\FileService;
+use Illuminate\Support\Facades\Auth;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -16,7 +17,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Регистрируем FileService в контейнере как синглтон
+        $this->app->singleton(FileService::class, function ($app) {
+            return new FileService();
+        });
     }
 
     /**
@@ -27,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
         Inertia::share([
             'auth' => function () {
                 return [
-                    'user' => auth()->user() ? auth()->user()->load('roles') : null,
+                    'user' => Auth::user() ? Auth::user()->load('roles') : null,
                 ];
             },
         ]);

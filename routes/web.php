@@ -38,10 +38,6 @@ Route::middleware('auth')->group(function () {
 Route::resource('tickets', TicketController::class)
     ->middleware(['auth', 'verified']);
 
-Route::get('/tickets/{ticket}/files/{ticket_file}', [TicketController::class, 'downloadFile'])
-    ->middleware(['auth', 'verified'])
-    ->name('tickets.files.download');
-
 Route::middleware(['auth'])->group(function () {
     // Route::post('/followups', [FollowupController::class, 'store'])->middleware('can.create.solution')->name('followups.store');
     Route::post('/followups', [FollowupController::class, 'store'])->name('followups.store');
@@ -49,9 +45,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/followups/{followup}', [FollowupController::class, 'show'])->name('followups.show');
     Route::put('/followups/{followup}', [FollowupController::class, 'update'])->name('followups.update');
     Route::delete('/followups/{followup}', [FollowupController::class, 'destroy'])->name('followups.destroy');
-    Route::get('/followups/{followup}/files/{followup_file}', [FollowupController::class, 'downloadFile'])
-        ->middleware(['auth', 'verified'])
-        ->name('followups.files.download');
 });
 
 // Добавить общий маршрут для скачивания файлов

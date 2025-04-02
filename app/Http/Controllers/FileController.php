@@ -2,56 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TicketFile;
-use App\Models\FollowupFile;
+use App\Services\FileService;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Http\RedirectResponse;
 
 class FileController extends Controller
 {
     /**
-     * Handle file download request.
+     * Сервис для работы с файлами
+     *
+     * @var FileService
      */
-    public function download($file_type, $file_id)
+    protected FileService $fileService;
+
+    /**
+     * Конструктор контроллера с внедрением зависимости FileService
+     *
+     * @param FileService $fileService
+     */
+    public function __construct(FileService $fileService)
     {
-        if ($file_type === 'ticket') {
-            return $this->downloadTicketFile($file_id);
-        } elseif ($file_type === 'followup') {
-            return $this->downloadFollowupFile($file_id);
-        }
-        
-        abort(404);
+        $this->fileService = $fileService;
     }
-    
-    private function downloadTicketFile($file_id)
+
+    /**
+     * Обрабатывает запрос на скачивание файла.
+     *
+     * @param string $fileType Тип файла ('ticket' или 'followup')
+     * @param int $fileId ID файла
+     * @return StreamedResponse|RedirectResponse
+     */
+    public function download(string $fileType, int $fileId)
     {
-        $ticketFile = TicketFile::findOrFail($file_id);
-        
-        // Авторизуем пользователя
-        Gate::authorize('view', $ticketFile->ticket);
-        
-        // Проверяем, существует ли файл физически
-        if (!Storage::disk('local')->exists($ticketFile->path)) {
-            return redirect()->back()->withErrors(['file_error' => 'File not found on server.']);
+        if (!in_array($fileType, ['ticket', 'followup'])) {
+            abort(404, 'Invalid file type');
         }
+
+        $result = $this->fileService->findFile($fileType, $fileId);
         
-        // Отдаем файл для скачивания
-        return Storage::disk('local')->download($ticketFile->path, $ticketFile->original_filename);
-    }
-    
-    private function downloadFollowupFile($file_id)
-    {
-        $followupFile = FollowupFile::findOrFail($file_id);
+        // Проверяем авторизацию
+        Gate::authorize('view', $result['authorizationModel']);
         
-        // Авторизуем пользователя
-        Gate::authorize('view', $followupFile->followup->ticket);
-        
-        // Проверяем, существует ли файл физически
-        if (!Storage::disk('local')->exists($followupFile->path)) {
-            return redirect()->back()->withErrors(['file_error' => 'File not found on server.']);
-        }
-        
-        // Отдаем файл для скачивания
-        return Storage::disk('local')->download($followupFile->path, $followupFile->original_filename);
+        // Скачиваем файл
+        return $this->fileService->downloadFile($result['file']);
     }
 } 

@@ -3,23 +3,38 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
-use App\Models\TicketFile;
-// use Illuminate\Auth\Access\AuthorizationException;
+use App\Services\FileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\Auth;
 class TicketController extends Controller
 {
+    /**
+     * Сервис для работы с файлами
+     *
+     * @var FileService
+     */
+    protected FileService $fileService;
+
+    /**
+     * Конструктор контроллера с внедрением зависимости FileService
+     *
+     * @param FileService $fileService
+     */
+    public function __construct(FileService $fileService)
+    {
+        $this->fileService = $fileService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request): Response
     {
-        $user = auth()->user();
+        $user = Auth::user();
         
         // Base query depending on user role
         $query = Ticket::with('user');  // Загружаем полные данные пользователя
@@ -117,19 +132,9 @@ class TicketController extends Controller
         $ticketData = collect($validated)->except('files')->toArray();
         $ticket = $request->user()->tickets()->create($ticketData);
 
+        // Используем FileService для загрузки файлов
         if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store('ticket_attachments/' . $ticket->id, 'local');
-
-                $ticket->files()->create([
-                    'user_id' => $request->user()->id,
-                    'original_filename' => $file->getClientOriginalName(),
-                    'filename' => basename($path),
-                    'path' => $path,
-                    'mime_type' => $file->getClientMimeType(),
-                    'size' => $file->getSize(),
-                ]);
-            }
+            $this->fileService->uploadFiles($ticket, $request->file('files'));
         }
 
         return redirect()->route('tickets.index');
@@ -191,10 +196,6 @@ class TicketController extends Controller
 
         $ticket->update($validated);
 
-        // Eager load followups with user relationship
-        // $ticket->load('followups.user');
-
-        // // Eager load followups with user relationship
         $ticket->load(['followups' => function ($query) {
             $query->latest(); // Load followups in descending order by created_at
         }, 'followups.user']);
@@ -213,33 +214,5 @@ class TicketController extends Controller
 
         return redirect()->route('tickets.index');
     }
-
-    /**
-     * Handle file download request.
-     *
-     * @param Ticket $ticket The ticket instance from Route Model Binding.
-     * @param TicketFile $ticketFile The ticket file instance from Route Model Binding.
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse|\Illuminate\Http\RedirectResponse
-     */
-    public function downloadFile(Ticket $ticket, TicketFile $ticketFile): \Symfony\Component\HttpFoundation\StreamedResponse|\Illuminate\Http\RedirectResponse
-    {
-        // 1. Проверяем, действительно ли файл принадлежит этому тикету
-        if ($ticketFile->ticket_id !== $ticket->id) {
-            abort(404); // Или другое сообщение об ошибке
-        }
-
-        // 2. Авторизуем пользователя (может ли он видеть этот тикет?)
-        Gate::authorize('view', $ticket);
-
-        // 3. Проверяем, существует ли файл физически
-        if (!Storage::disk('local')->exists($ticketFile->path)) {
-            // Можно добавить логирование или flash-сообщение
-             return redirect()->back()->withErrors(['file_error' => 'File not found on server.']);
-            // abort(404, 'File not found.');
-        }
-
-        // 4. Отдаем файл для скачивания
-        // Storage::download(путь_к_файлу, имя_файла_для_пользователя)
-        return Storage::disk('local')->download($ticketFile->path, $ticketFile->original_filename);
-    }
+    
 }

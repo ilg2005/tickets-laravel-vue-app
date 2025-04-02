@@ -6,11 +6,28 @@ use App\Models\Ticket;
 use App\Models\User;
 use App\Notifications\NewTicketNotification;
 use App\Notifications\TicketStatusUpdatedNotification;
+use App\Services\FileService;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Storage;
 
 class TicketObserver
 {
+    /**
+     * Сервис для работы с файлами
+     *
+     * @var FileService
+     */
+    protected FileService $fileService;
+
+    /**
+     * Конструктор наблюдателя с внедрением зависимости FileService
+     *
+     * @param FileService $fileService
+     */
+    public function __construct(FileService $fileService)
+    {
+        $this->fileService = $fileService;
+    }
+
     /**
      * Handle the Ticket "created" event.
      */
@@ -47,18 +64,8 @@ class TicketObserver
      */
     public function deleting(Ticket $ticket): void
     {
-        // 1. Удаляем все физические файлы, связанные с тикетом
-        foreach ($ticket->files as $file) {
-            // Используем тот же диск ('local'), на который сохраняли
-            Storage::disk('local')->delete($file->path);
-        }
-
-        // 2. Удаляем саму директорию тикета (опционально, но рекомендуется для чистоты)
-        // Это удалит папку storage/app/ticket_attachments/{ticket_id}
-        Storage::disk('local')->deleteDirectory('ticket_attachments/' . $ticket->id);
-
-        // Записи в таблице ticket_files будут удалены автоматически
-        // благодаря ->cascadeOnDelete() в миграции.
+        // Используем FileService для удаления всех файлов тикета
+        $this->fileService->deleteFiles($ticket);
     }
 
     /**
@@ -67,7 +74,7 @@ class TicketObserver
      */
     public function deleted(Ticket $ticket): void
     {
-        // Логику удаления файлов перенесли в 'deleting'
+        // Логика удаления файлов перенесена в 'deleting'
     }
 
     /**

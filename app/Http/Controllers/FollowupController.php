@@ -3,19 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Models\Followup;
-use App\Models\FollowupFile;
 use App\Models\Ticket;
+use App\Models\User;
+use App\Notifications\NewFollowupNotification;
+use App\Services\FileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
-use App\Notifications\NewFollowupNotification;
 use Illuminate\Support\Facades\Notification;
-use App\Models\User;
+use Inertia\Inertia;
 
 class FollowupController extends Controller
 {
+    /**
+     * Сервис для работы с файлами
+     *
+     * @var FileService
+     */
+    protected FileService $fileService;
+
+    /**
+     * Конструктор контроллера с внедрением зависимости FileService
+     *
+     * @param FileService $fileService
+     */
+    public function __construct(FileService $fileService)
+    {
+        $this->fileService = $fileService;
+    }
+
     public function index(Ticket $ticket)
     {
         $followups = $ticket->followups()->with('files')->get();
@@ -74,20 +90,9 @@ class FollowupController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
-            // Обрабатываем загруженные файлы
+            // Используем FileService для загрузки файлов
             if ($request->hasFile('files')) {
-                foreach ($request->file('files') as $file) {
-                    $path = $file->store('followup_attachments/' . $followup->id, 'local');
-
-                    $followup->files()->create([
-                        'user_id' => Auth::id(),
-                        'original_filename' => $file->getClientOriginalName(),
-                        'filename' => basename($path),
-                        'path' => $path,
-                        'mime_type' => $file->getClientMimeType(),
-                        'size' => $file->getSize(),
-                    ]);
-                }
+                $this->fileService->uploadFiles($followup, $request->file('files'));
             }
 
             // Перезагружаем модель с файлами
@@ -142,27 +147,6 @@ class FollowupController extends Controller
         $followup->delete();
 
         return redirect()->back()->with('message', 'Followup deleted successfully.');
-    }
+    }    
     
-    /**
-     * Handle file download request.
-     */
-    public function downloadFile(Followup $followup, FollowupFile $followupFile)
-    {
-        // Проверяем, действительно ли файл принадлежит этому followup
-        if ($followupFile->followup_id !== $followup->id) {
-            abort(404);
-        }
-
-        // Авторизуем пользователя
-        Gate::authorize('view', $followup->ticket);
-
-        // Проверяем, существует ли файл физически
-        if (!Storage::disk('local')->exists($followupFile->path)) {
-            return redirect()->back()->withErrors(['file_error' => 'File not found on server.']);
-        }
-
-        // Отдаем файл для скачивания
-        return Storage::disk('local')->download($followupFile->path, $followupFile->original_filename);
-    }
 }
