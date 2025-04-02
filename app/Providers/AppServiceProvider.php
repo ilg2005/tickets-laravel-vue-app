@@ -10,6 +10,8 @@ use App\Observers\TicketObserver;
 use App\Observers\FollowupObserver;
 use App\Services\FileService;
 use Illuminate\Support\Facades\Auth;
+use App\Services\TicketFilterService;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -20,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
         // Регистрируем FileService в контейнере как синглтон
         $this->app->singleton(FileService::class, function ($app) {
             return new FileService();
+        });
+
+        $this->app->singleton(TicketFilterService::class, function ($app) {
+            return new TicketFilterService();
         });
     }
 

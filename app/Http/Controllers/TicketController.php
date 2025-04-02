@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Ticket;
 use App\Services\FileService;
+use App\Services\TicketFilterService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+
 class TicketController extends Controller
 {
     /**
@@ -20,13 +22,22 @@ class TicketController extends Controller
     protected FileService $fileService;
 
     /**
-     * Конструктор контроллера с внедрением зависимости FileService
+     * Сервис для фильтрации тикетов
+     *
+     * @var TicketFilterService
+     */
+    protected TicketFilterService $ticketFilterService;
+
+    /**
+     * Конструктор контроллера с внедрением зависимостей
      *
      * @param FileService $fileService
+     * @param TicketFilterService $ticketFilterService
      */
-    public function __construct(FileService $fileService)
+    public function __construct(FileService $fileService, TicketFilterService $ticketFilterService)
     {
         $this->fileService = $fileService;
+        $this->ticketFilterService = $ticketFilterService;
     }
 
     /**
@@ -34,75 +45,10 @@ class TicketController extends Controller
      */
     public function index(Request $request): Response
     {
-        $user = Auth::user();
+        // Получаем отфильтрованные и отсортированные тикеты с использованием сервиса
+        $data = $this->ticketFilterService->getFilteredTickets($request);
         
-        // Base query depending on user role
-        $query = Ticket::with('user');  // Загружаем полные данные пользователя
-        
-        if (!$user->hasRole('admin')) {
-            $query->where('user_id', $user->id);
-        }
-        
-        // Apply filters
-        if ($request->has('filters')) {
-            $filters = $request->filters;
-            
-            if (!empty($filters['id'])) {
-                $query->where('id', 'like', $filters['id'] . '%');
-            }
-            
-            if (!empty($filters['title'])) {
-                $query->where('title', 'like', '%' . $filters['title'] . '%');
-            }
-            
-            if (!empty($filters['description'])) {
-                $query->where('description', 'like', '%' . $filters['description'] . '%');
-            }
-            
-            if (isset($filters['status']) && $filters['status'] !== null && $filters['status'] !== '') {
-                $query->where('status', $filters['status']);
-            }
-            
-            if (isset($filters['priority']) && $filters['priority'] !== null && $filters['priority'] !== '') {
-                $query->where('priority', $filters['priority']);
-            }
-            
-            // Фильтрация по имени пользователя (для админов)
-            if ($user->hasRole('admin') && !empty($filters['user_name'])) {
-                $query->whereHas('user', function ($q) use ($filters) {
-                    $q->where('name', 'like', '%' . $filters['user_name'] . '%');
-                });
-            }
-        }
-        
-        // Apply sorting
-        $sortField = $request->input('sort.field', 'updated_at');
-        $sortOrder = $request->input('sort.order', 'desc');
-        
-        if ($sortField === 'user_name') {
-            // Сортировка по имени пользователя через join
-            $query->join('users', 'tickets.user_id', '=', 'users.id')
-                  ->orderBy('users.name', $sortOrder)
-                  ->select('tickets.*');
-        } else {
-            $query->orderBy($sortField, $sortOrder);
-        }
-        
-        // Get results
-        $tickets = $query->get();
-        
-        // Проверяем, является ли пользователь администратором
-        $isAdmin = $user->hasRole('admin');
-        
-        return Inertia::render('Tickets/Index', [
-            'tickets' => $tickets,
-            'filters' => $request->input('filters', []),
-            'sort' => [
-                'field' => $sortField,
-                'order' => $sortOrder
-            ],
-            'isAdmin' => $isAdmin
-        ]);
+        return Inertia::render('Tickets/Index', $data);
     }
 
     /**
