@@ -354,8 +354,8 @@ const handleFilesUpdated = (updatedFiles) => {
                             <div class="flex items-center overflow-hidden mr-2">
                                 <i class="pi pi-file mr-2 text-gray-500"></i>
                                 <a :href="file.is_followup 
-                                        ? route('files.download', { file_type: 'followup', file_id: file.id })
-                                        : route('files.download', { file_type: 'ticket', file_id: file.id })"
+                                        ? route('followups.files.download', { file_id: file.id })
+                                        : route('tickets.files.download', { file_id: file.id })"
                                    class="text-indigo-600 hover:text-indigo-800 hover:underline truncate"
                                    :title="file.original_filename">
                                     {{ file.original_filename }}

@@ -11,6 +11,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TicketController extends Controller
 {
@@ -157,4 +158,14 @@ class TicketController extends Controller
         return redirect()->route('tickets.index');
     }
     
+    /**
+     * Скачивание файла, прикрепленного к тикету
+     * 
+     * @param int $fileId ID файла для скачивания
+     * @return StreamedResponse|RedirectResponse
+     */
+    public function downloadFile(int $fileId): StreamedResponse|RedirectResponse
+    {
+        return $this->fileService->downloadFileWithAuthorization('ticket', $fileId);
+    }
 }

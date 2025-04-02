@@ -45,11 +45,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/followups/{followup}', [FollowupController::class, 'show'])->name('followups.show');
     Route::put('/followups/{followup}', [FollowupController::class, 'update'])->name('followups.update');
     Route::delete('/followups/{followup}', [FollowupController::class, 'destroy'])->name('followups.destroy');
+    
+    // Маршруты для скачивания файлов
+    Route::get('/tickets/files/{file_id}', [TicketController::class, 'downloadFile'])
+        ->name('tickets.files.download');
+    Route::get('/followups/files/{file_id}', [FollowupController::class, 'downloadFile'])
+        ->name('followups.files.download');
 });
 
-// Добавить общий маршрут для скачивания файлов
-Route::get('/files/{file_type}/{file_id}', [FileController::class, 'download'])
-    ->middleware(['auth', 'verified'])
-    ->name('files.download');
 
 require __DIR__.'/auth.php';

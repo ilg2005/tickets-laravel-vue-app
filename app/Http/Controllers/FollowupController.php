@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Http\RedirectResponse;
 
 class FollowupController extends Controller
 {
@@ -146,4 +148,14 @@ class FollowupController extends Controller
         return redirect()->back()->with('message', 'Followup deleted successfully.');
     }    
     
+    /**
+     * Скачивание файла, прикрепленного к ответу
+     * 
+     * @param int $fileId ID файла для скачивания
+     * @return StreamedResponse|RedirectResponse
+     */
+    public function downloadFile(int $fileId): StreamedResponse|RedirectResponse
+    {
+        return $this->fileService->downloadFileWithAuthorization('followup', $fileId);
+    }
 }

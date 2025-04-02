@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class FileService
 {
@@ -87,6 +88,28 @@ class FileService
         }
 
         return Storage::disk($this->disk)->download($file->path, $file->original_filename);
+    }
+    
+    /**
+     * Находит и скачивает файл с проверкой авторизации.
+     *
+     * @param string $fileType Тип файла ('ticket' или 'followup')
+     * @param int $fileId ID файла
+     * @return StreamedResponse|RedirectResponse
+     */
+    public function downloadFileWithAuthorization(string $fileType, int $fileId): StreamedResponse|RedirectResponse
+    {
+        if (!in_array($fileType, ['ticket', 'followup'])) {
+            abort(404, 'Invalid file type');
+        }
+
+        $result = $this->findFile($fileType, $fileId);
+        
+        // Проверяем авторизацию
+        Gate::authorize('view', $result['authorizationModel']);
+        
+        // Скачиваем файл
+        return $this->downloadFile($result['file']);
     }
 
     /**
