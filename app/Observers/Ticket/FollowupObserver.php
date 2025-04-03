@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Observers;
+namespace App\Observers\Ticket;
 
-use App\Models\Followup;
+use App\Models\Ticket\Followup;
 use App\Models\User;
-use App\Notifications\NewFollowupNotification;
-use App\Services\FileService;
+use App\Notifications\Ticket\NewFollowupNotification;
+use App\Services\Ticket\FileService;
 use Illuminate\Support\Facades\Notification;
 
 class FollowupObserver

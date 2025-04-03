@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Ticket;
 
-use App\Models\Ticket;
+use App\Models\Ticket\Ticket;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

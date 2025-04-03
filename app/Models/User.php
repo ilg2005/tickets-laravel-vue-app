@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+// Добавьте импорты моделей из подкаталога Ticket
+use App\Models\Ticket\Ticket;
+use App\Models\Ticket\Followup;
+use App\Models\Ticket\TicketFile;
+
 // use Illuminate\Database\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -56,7 +61,7 @@ class User extends Authenticatable
         return $this->hasMany(Ticket::class);
     }
 
-    public function followups()
+    public function followups(): HasMany
     {
         return $this->hasMany(Followup::class);
     }

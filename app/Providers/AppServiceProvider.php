@@ -4,13 +4,13 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
-use App\Models\Ticket;
-use App\Models\Followup;
-use App\Observers\TicketObserver;
-use App\Observers\FollowupObserver;
-use App\Services\FileService;
+use App\Models\Ticket\Ticket;
+use App\Models\Ticket\Followup;
+use App\Observers\Ticket\TicketObserver;
+use App\Observers\Ticket\FollowupObserver;
+use App\Services\Ticket\FileService;
 use Illuminate\Support\Facades\Auth;
-use App\Services\TicketFilterService;
+use App\Services\Ticket\TicketFilterService;
 
 class AppServiceProvider extends ServiceProvider
 {

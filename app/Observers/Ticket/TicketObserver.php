@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Observers;
+namespace App\Observers\Ticket;
 
-use App\Models\Ticket;
+use App\Models\Ticket\Ticket;
 use App\Models\User;
-use App\Notifications\NewTicketNotification;
-use App\Notifications\TicketStatusUpdatedNotification;
-use App\Services\FileService;
+use App\Notifications\Ticket\NewTicketNotification;
+use App\Notifications\Ticket\TicketStatusUpdatedNotification;
+use App\Services\Ticket\FileService;
 use Illuminate\Support\Facades\Notification;
 
 class TicketObserver

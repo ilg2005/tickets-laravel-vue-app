@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Ticket;
+use App\Models\Ticket\Ticket;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;

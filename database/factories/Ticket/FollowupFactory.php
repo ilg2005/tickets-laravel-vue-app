@@ -1,12 +1,12 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\Ticket;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Followup>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Ticket\Followup>
  */
 class FollowupFactory extends Factory
 {

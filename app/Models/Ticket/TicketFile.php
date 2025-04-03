@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Ticket;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\User;
 
 class TicketFile extends Model
 {

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Ticket;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\Followup;
+use App\Models\Ticket\Followup;
 use App\Models\User;
 
 class NewFollowupNotification extends Notification implements ShouldQueue

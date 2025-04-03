@@ -1,13 +1,11 @@
 <?php
 
-use App\Http\Controllers\FollowupController;
+use App\Http\Controllers\Ticket\FollowupController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TicketController;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\Ticket\TicketController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Models\TicketFile;
-use App\Http\Controllers\FileController;
+
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [

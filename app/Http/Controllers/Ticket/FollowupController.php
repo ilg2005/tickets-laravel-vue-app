@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Ticket;
 
-use App\Models\Followup;
-use App\Models\Ticket;
+use App\Models\Ticket\Followup;
 use App\Models\User;
-use App\Notifications\NewFollowupNotification;
-use App\Services\FileService;
+use App\Notifications\Ticket\NewFollowupNotification;
+use App\Services\Ticket\FileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -14,7 +13,7 @@ use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Http\RedirectResponse;
-
+use App\Http\Controllers\Controller;
 class FollowupController extends Controller
 {
     /**

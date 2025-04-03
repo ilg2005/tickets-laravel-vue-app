@@ -2,7 +2,7 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use Throwable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
@@ -25,7 +25,7 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      */
-    public function render($request, Exception $exception): Response|JsonResponse
+    public function render($request, Throwable $exception): Response|JsonResponse
     {
         if ($exception instanceof AuthorizationException) {
             return response()->json(['error' => $exception->getMessage()], 403);

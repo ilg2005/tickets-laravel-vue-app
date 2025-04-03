@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Ticket;
 
-use App\Models\Ticket;
-use App\Services\FileService;
-use App\Services\TicketFilterService;
+use App\Models\Ticket\Ticket;
+use App\Services\Ticket\FileService;
+use App\Services\Ticket\TicketFilterService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-
+use App\Http\Controllers\Controller;
 class TicketController extends Controller
 {
     /**

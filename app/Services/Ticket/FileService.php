@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Ticket;
 
-use App\Models\Followup;
-use App\Models\FollowupFile;
-use App\Models\Ticket;
-use App\Models\TicketFile;
+use App\Models\Ticket\FollowupFile;
+use App\Models\Ticket\Ticket;
+use App\Models\Ticket\TicketFile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;

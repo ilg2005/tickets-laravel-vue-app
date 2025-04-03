@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notifications\Ticket;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\Ticket;
+use App\Models\Ticket\Ticket;
 use App\Models\User;
 
 class TicketStatusUpdatedNotification extends Notification implements ShouldQueue
