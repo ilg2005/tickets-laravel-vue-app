@@ -1,7 +1,7 @@
 <script setup>
 import { useForm, router } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
-import Button from 'primevue/button';
+import Button from '@/Components/Button.vue';
 
 const props = defineProps({
     ticketId: {
@@ -69,8 +69,8 @@ const formatFileSize = (bytes) => {
                 </div>
                 
                 <div class="mb-4">
-                    <label for="files" class="block text-sm font-medium">Прикрепить файлы</label>
-                    <p class="text-xs text-gray-500 mb-1">Макс. 10MB на файл. Разрешены: jpg, png, pdf, doc(x), zip, rar, txt</p>
+                    <label for="files" class="block text-sm font-medium">Attach Files</label>
+                    <p class="text-xs text-gray-500 mb-1">Max. 10MB per file. Allowed: jpg, png, pdf, doc(x), zip, rar, txt</p>
                     <input
                         id="files"
                         type="file"
@@ -79,7 +79,7 @@ const formatFileSize = (bytes) => {
                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 border border-gray-300 rounded-md shadow-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     <div v-if="form.files && form.files.length > 0" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        <p>Выбранные файлы:</p>
+                        <p>Selected files:</p>
                         <ul>
                             <li v-for="file in Array.from(form.files)" :key="file.name">
                                 {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
@@ -93,9 +93,8 @@ const formatFileSize = (bytes) => {
                 </div>
                 
                 <div class="flex justify-end gap-2">
-                    <Button label="Cancel" severity="secondary" type="button"
-                        @click="form.reset(); form.clearErrors()" />
-                    <Button severity="primary" type="submit">Add Follow-up</Button>
+                    <Button @click="form.reset(); form.clearErrors()" class="text-secondary">Cancel</Button>
+                    <Button type="submit" class="text-primary">Add Follow-up</Button>
                 </div>
             </div>
         </div>

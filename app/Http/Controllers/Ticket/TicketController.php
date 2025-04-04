@@ -12,6 +12,8 @@ use Inertia\Response;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+
 class TicketController extends Controller
 {
     /**
@@ -166,5 +168,35 @@ class TicketController extends Controller
     public function downloadFile(int $fileId): StreamedResponse|RedirectResponse
     {
         return $this->fileService->downloadFileWithAuthorization('ticket', $fileId);
+    }
+
+    /**
+     * Временный метод для отображения всех тикетов без фильтрации
+     */
+    public function allTickets(Request $request): Response
+    {
+        $user = Auth::user();
+        $isAdmin = $user->hasRole('admin');
+        
+        // Базовый запрос
+        $query = Ticket::with('user');
+        
+        // Фильтрация по пользователю для не-админов
+        if (!$isAdmin) {
+            $query->where('user_id', $user->id);
+        }
+        
+        // Простая сортировка по ID (можно изменить)
+        $query->orderBy('id', 'desc');
+        
+        // Получаем все тикеты без пагинации
+        $allTickets = $query->get();
+        
+        // Возвращаем данные для отображения
+        return Inertia::render('Tickets/AllTickets', [
+            'tickets' => $allTickets,
+            'isAdmin' => $isAdmin,
+            'totalCount' => $allTickets->count()
+        ]);
     }
 }

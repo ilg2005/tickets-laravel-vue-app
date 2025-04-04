@@ -36,8 +36,14 @@ class TicketFilterService
         // Применяем сортировку
         $this->applySorting($query, $request);
         
-        // Получаем результаты запроса
-        $tickets = $query->get();
+        // Получаем параметр per_page из запроса
+        $perPage = (int)$request->input('per_page', 15);
+        if ($perPage <= 0 || $perPage > 100) {
+            $perPage = 15;
+        }
+        
+        // Получаем результаты запроса с пагинацией
+        $tickets = $query->paginate($perPage);
         
         // Проверяем, является ли пользователь администратором
         $isAdmin = $user->hasRole('admin');
@@ -63,39 +69,30 @@ class TicketFilterService
      */
     private function applyFilters(Builder $query, Request $request, $user): Builder
     {
-        if (!$request->has('filters')) {
-            return $query;
-        }
-        
         $filters = $request->filters;
         
-        // Фильтрация по ID тикета
-        if (!empty($filters['id'])) {
+        // ИСПРАВЛЕНИЕ: Используем isset вместо !empty для более точной проверки
+        if (isset($filters['id']) && $filters['id'] !== '') {
             $query->where('id', 'like', $filters['id'] . '%');
         }
         
-        // Фильтрация по заголовку
-        if (!empty($filters['title'])) {
+        if (isset($filters['title']) && $filters['title'] !== '') {
             $query->where('title', 'like', '%' . $filters['title'] . '%');
         }
         
-        // Фильтрация по описанию
-        if (!empty($filters['description'])) {
+        if (isset($filters['description']) && $filters['description'] !== '') {
             $query->where('description', 'like', '%' . $filters['description'] . '%');
         }
         
-        // Фильтрация по статусу (если статус не пуст)
-        if (isset($filters['status']) && $filters['status'] !== null && $filters['status'] !== '') {
+        if (isset($filters['status']) && $filters['status'] !== '') {
             $query->where('status', $filters['status']);
         }
         
-        // Фильтрация по приоритету (если приоритет не пуст)
-        if (isset($filters['priority']) && $filters['priority'] !== null && $filters['priority'] !== '') {
+        if (isset($filters['priority']) && $filters['priority'] !== '') {
             $query->where('priority', $filters['priority']);
         }
         
-        // Фильтрация по имени пользователя (только для админов)
-        if ($user->hasRole('admin') && !empty($filters['user_name'])) {
+        if ($user->hasRole('admin') && isset($filters['user_name']) && $filters['user_name'] !== '') {
             $query->whereHas('user', function ($q) use ($filters) {
                 $q->where('name', 'like', '%' . $filters['user_name'] . '%');
             });

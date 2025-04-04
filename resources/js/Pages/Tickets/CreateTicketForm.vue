@@ -1,15 +1,14 @@
 <script setup>
 import { useForm, router } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
+import Button from '@/Components/Button.vue';
 import { computed, ref, watch } from 'vue';
-import { useToast } from "primevue/usetoast";
 import { usePermission } from '@/Composables/permissions.js';
-import { useConfirm } from "primevue/useconfirm";
 import { usePage } from "@inertiajs/vue3";
 import FollowupsList from '@/Pages/Tickets/Followups/FollowupsList.vue';
 import CreateFollowupForm from '@/Pages/Tickets/Followups/CreateFollowupForm.vue';
 
-const { props } = usePage()
+const { props } = usePage();
 
 const user = props.auth.user;
 
@@ -19,9 +18,6 @@ const { hasRole } = usePermission();
 const canCreateSolutionFollowups = hasPermission('create solution followups');
 const isAdmin = hasRole('admin');
 const canDeleteFollowups = hasPermission('delete followups');
-
-const confirm = useConfirm();
-const toast = useToast();
 
 const ticketProps = defineProps({
     ticket: {
@@ -70,10 +66,8 @@ const isDisabled = computed(() => ticketProps.mode === 'show');
 
 const fileInput = ref(null);
 
-// Добавим реактивный массив для хранения списка файлов
 const allFiles = ref(props.allFiles || []);
 
-// Слушаем изменения пропса allFiles
 watch(() => props.allFiles, (newFiles) => {
     allFiles.value = newFiles;
 }, { deep: true });
@@ -91,20 +85,19 @@ function handleFileChange(event) {
 const save = () => {
     if (isEdit.value) {
         form.put(route('tickets.update', ticketProps.ticket.id), {
-            onSuccess: () =>
-                toast.add({ severity: 'success', summary: 'Success', detail: 'Ticket updated', life: 3000 }),
+            onSuccess: () => alert('Ticket updated successfully'),
         });
     } else if (isCreate.value) {
         form.post(route('tickets.store'), {
             onSuccess: () => {
-                toast.add({ severity: 'success', summary: 'Success', detail: 'Ticket created', life: 3000 });
+                alert('Ticket created successfully');
                 form.reset();
                 if (fileInput.value) {
                     fileInput.value.value = '';
                 }
             },
             onError: (errors) => {
-                toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to create ticket. Please check the form.', life: 3000 });
+                alert('Failed to create ticket. Please check the form.');
                 console.error('Ticket creation errors:', errors);
             }
         });
@@ -115,7 +108,7 @@ const saveFollowUps = () => {
     followupForm.post(route('followups.store'), {
         onSuccess: (response) => {
             const message = response.props.flash.success || 'Follow-up added';
-            toast.add({ severity: 'success', summary: 'Success', detail: message, life: 3000 });
+            alert(message);
             const newFollowup = response.props.ticket.followups[response.props.ticket.followups.length - 1];
             if (ticketProps.ticket) {
                 ticketProps.ticket.followups.push(newFollowup);
@@ -124,7 +117,7 @@ const saveFollowUps = () => {
         },
         onError: (errors) => {
             const message = errors[0] || 'Error adding follow-up';
-            toast.add({ severity: 'error', summary: 'Error', detail: message, life: 3000 });
+            alert(message);
         },
     });
 };
@@ -157,8 +150,8 @@ const saveEditedFollowup = () => {
     editFollowupForm.put(route('followups.update', editFollowupForm.followup_id), {
         onSuccess: (response) => {
             const message = response.props.flash.success || 'Follow-up updated';
-            toast.add({ severity: 'success', summary: 'Success', detail: message, life: 3000 });
-            const updatedFollowup = response.props.ticket.followups.find(f => f.id === editFollowupForm.followup_id)
+            alert(message);
+            const updatedFollowup = response.props.ticket.followups.find(f => f.id === editFollowupForm.followup_id);
             const index = ticketProps.ticket.followups.findIndex(f => f.id === updatedFollowup.id);
             if (index !== -1) {
                 ticketProps.ticket.followups.splice(index, 1, updatedFollowup);
@@ -167,7 +160,7 @@ const saveEditedFollowup = () => {
         },
         onError: (errors) => {
             const message = errors[0] || 'Error updating follow-up';
-            toast.add({ severity: 'error', summary: 'Error', detail: message, life: 3000 });
+            alert(message);
         },
     });
 };
@@ -185,35 +178,22 @@ const goBack = () => {
 };
 
 const deleteConfirm = (followupId) => {
-    confirm.require({
-        message: 'Are you sure you want to proceed?',
-        header: 'Confirmation',
-        icon: 'pi pi-exclamation-triangle',
-        rejectProps: {
-            label: 'Cancel',
-            severity: 'secondary',
-            outlined: true
-        },
-        acceptProps: {
-            label: 'Confirm'
-        },
-        accept: () => {
-            deleteFollowupForm.delete(route("followups.destroy", { id: followupId }), {
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast.add({ severity: 'success', summary: 'Success', detail: 'Follow-up deleted', life: 3000 });
-                    const index = ticketProps.ticket.followups.findIndex(f => f.id === followupId);
-                    if (index !== -1) {
-                        ticketProps.ticket.followups.splice(index, 1);
-                    }
-                },
-                onError: (errors) => {
-                    const message = errors[0] || 'Error deleting follow-up';
-                    toast.add({ severity: 'error', summary: 'Error', detail: message, life: 3000 });
-                },
-            });
-        },
-    });
+    if (confirm('Are you sure you want to proceed?')) {
+        deleteFollowupForm.delete(route("followups.destroy", { id: followupId }), {
+            preserveScroll: true,
+            onSuccess: () => {
+                alert('Follow-up deleted successfully');
+                const index = ticketProps.ticket.followups.findIndex(f => f.id === followupId);
+                if (index !== -1) {
+                    ticketProps.ticket.followups.splice(index, 1);
+                }
+            },
+            onError: (errors) => {
+                const message = errors[0] || 'Error deleting follow-up';
+                alert(message);
+            },
+        });
+    }
 };
 
 const formatFileSize = (bytes) => {
@@ -224,12 +204,11 @@ const formatFileSize = (bytes) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-// Обработчики событий
 const handleFollowupDelete = (followupId) => {
     deleteFollowupForm.delete(route("followups.destroy", { id: followupId }), {
         preserveScroll: true,
         onSuccess: () => {
-            toast.add({ severity: 'success', summary: 'Success', detail: 'Follow-up deleted', life: 3000 });
+            alert('Follow-up deleted successfully');
             const index = ticketProps.ticket.followups.findIndex(f => f.id === followupId);
             if (index !== -1) {
                 ticketProps.ticket.followups.splice(index, 1);
@@ -246,29 +225,25 @@ const handleFollowupUpdate = (form) => {
             if (index !== -1) {
                 ticketProps.ticket.followups.splice(index, 1, updatedFollowup);
             }
-            toast.add({ severity: 'success', summary: 'Success', detail: 'Follow-up updated', life: 3000 });
+            alert('Follow-up updated successfully');
         }
     });
 };
 
 const handleFollowupCreated = (newFollowup) => {
     ticketProps.ticket.followups.push(newFollowup);
-    toast.add({ severity: 'success', summary: 'Success', detail: 'Follow-up added', life: 3000 });
+    alert('Follow-up added successfully');
 };
 
-// Функция обработки обновления списка файлов
 const handleFilesUpdated = (updatedFiles) => {
     allFiles.value = updatedFiles;
 };
 </script>
 
 <template>
-    <Toast />
-    <ConfirmDialog></ConfirmDialog>
-
     <div class="max-w-2xl mx-auto p-4 sm:px-6 md:max-w-full md:space-x-2 lg:px-8">
         <div class="flex mb-10">
-            <Button label="Back" severity="secondary" @click="goBack" text icon="pi pi-arrow-left" />
+            <Button @click="goBack" class="text-secondary">Back</Button>
         </div>
         <div class="grid md:grid-cols-3 h-full gap-8">
             <!-- Ticket form -->
@@ -322,8 +297,8 @@ const handleFilesUpdated = (updatedFiles) => {
                 </div>
 
                 <div class="mb-4" v-if="isCreate">
-                    <label for="files" class="block text-sm font-medium text-gray-700">Прикрепить файлы</label>
-                    <p class="text-xs text-gray-500 mb-1">Макс. 10MB на файл. Разрешены: jpg, png, pdf, doc(x), zip, rar, txt</p>
+                    <label for="files" class="block text-sm font-medium text-gray-700">Attach Files</label>
+                    <p class="text-xs text-gray-500 mb-1">Max. 10MB per file. Allowed: jpg, png, pdf, doc(x), zip, rar, txt</p>
                     <input
                         id="files"
                         ref="fileInput"
@@ -333,7 +308,7 @@ const handleFilesUpdated = (updatedFiles) => {
                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 border border-gray-300 rounded-md shadow-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     <div v-if="form.files && form.files.length > 0" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        <p>Выбранные файлы:</p>
+                        <p>Selected files:</p>
                         <ul>
                             <li v-for="file in Array.from(form.files)" :key="file.name">
                                 {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
@@ -347,7 +322,7 @@ const handleFilesUpdated = (updatedFiles) => {
                 </div>
 
                 <div class="mb-4" v-if="(isEdit || isShow) && allFiles.length > 0">
-                    <h3 class="block text-sm font-medium text-gray-700 mb-2">Прикрепленные файлы</h3>
+                    <h3 class="block text-sm font-medium text-gray-700 mb-2">Attached Files</h3>
                     <ul class="list-none p-0 m-0 border border-gray-300 rounded-md divide-y divide-gray-300">
                         <li v-for="file in allFiles" :key="`${file.is_followup ? 'followup' : 'ticket'}-${file.id}`" 
                             class="p-3 flex justify-between items-center text-sm">
@@ -360,7 +335,7 @@ const handleFilesUpdated = (updatedFiles) => {
                                    :title="file.original_filename">
                                     {{ file.original_filename }}
                                     <span v-if="file.is_followup" class="text-gray-500 text-xs">
-                                        (из комментария от {{ formatDate(file.followup_created_at) }})
+                                        (from follow-up on {{ formatDate(file.followup_created_at) }})
                                     </span>
                                 </a>
                             </div>
@@ -371,7 +346,7 @@ const handleFilesUpdated = (updatedFiles) => {
                     </ul>
                 </div>
                 <div class="mb-4 text-sm text-gray-500" v-else-if="isEdit || isShow">
-                    Нет прикрепленных файлов.
+                    No attached files.
                 </div>
 
                 <template v-if="isEdit || isShow">
@@ -393,8 +368,8 @@ const handleFilesUpdated = (updatedFiles) => {
                 </template>
 
                 <div v-if="isEdit || isCreate" class="flex justify-end gap-2 mt-4">
-                    <Button label="Cancel" severity="secondary" type="button" @click="form.reset(); form.clearErrors()" :disabled="form.processing"/>
-                    <Button :label="isEdit ? 'Update Ticket' : 'Create Ticket'" severity="primary" type="submit" :loading="form.processing" />
+                    <Button @click="form.reset(); form.clearErrors()" :disabled="form.processing" class="text-secondary">Cancel</Button>
+                    <Button type="submit" :disabled="form.processing" class="text-primary">{{ isEdit ? 'Update Ticket' : 'Create Ticket' }}</Button>
                 </div>
             </form>
 

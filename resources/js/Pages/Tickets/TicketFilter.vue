@@ -1,8 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
-import Select from 'primevue/select';
+import InputText from '@/Components/InputText.vue';
+import Button from '@/Components/Button.vue';
 
 const props = defineProps({
     filters: {
@@ -32,30 +31,19 @@ const priorityOptions = [
 const id = ref(props.filters.id || '');
 const title = ref(props.filters.title || '');
 const description = ref(props.filters.description || '');
-const status = ref(null);
-const priority = ref(null);
+const status = ref(props.filters.status || '');
+const priority = ref(props.filters.priority || '');
 const user_name = ref(props.filters.user_name || '');
-
-// Set initial status based on props
-if (props.filters.status) {
-    status.value = statusOptions.find(option => option.value === props.filters.status) || null;
-}
-
-// Set initial priority based on props
-if (props.filters.priority) {
-    priority.value = priorityOptions.find(option => option.value === props.filters.priority) || null;
-}
 
 const emitChanges = () => {
     const filters = {
         id: id.value,
         title: title.value,
         description: description.value,
-        status: status.value ? status.value.value : null,
-        priority: priority.value ? priority.value.value : null
+        status: status.value,
+        priority: priority.value
     };
     
-    // Добавляем фильтрацию по имени пользователя только для админов
     if (props.isAdmin) {
         filters.user_name = user_name.value;
     }
@@ -67,8 +55,8 @@ const resetFilters = () => {
     id.value = '';
     title.value = '';
     description.value = '';
-    status.value = null;
-    priority.value = null;
+    status.value = '';
+    priority.value = '';
     if (props.isAdmin) {
         user_name.value = '';
     }
@@ -106,37 +94,29 @@ onUnmounted(() => {
             </div>
             
             <div class="status-cell">
-                <Select 
-                    v-model="status" 
-                    :options="statusOptions" 
-                    optionLabel="label" 
-                    placeholder="Status" 
-                    class="w-full" 
-                    @change="emitChanges"
-                />
+                <select v-model="status" @change="emitChanges" class="w-full border-gray-300 rounded-md shadow-sm">
+                    <option value="" disabled>Status</option>
+                    <option v-for="option in statusOptions" :key="option.value" :value="option.value">
+                        {{ option.label }}
+                    </option>
+                </select>
             </div>
             
             <div class="priority-cell">
-                <Select 
-                    v-model="priority" 
-                    :options="priorityOptions" 
-                    optionLabel="label" 
-                    placeholder="Priority" 
-                    class="w-full" 
-                    @change="emitChanges"
-                />
+                <select v-model="priority" @change="emitChanges" class="w-full border-gray-300 rounded-md shadow-sm">
+                    <option value="" disabled>Priority</option>
+                    <option v-for="option in priorityOptions" :key="option.value" :value="option.value">
+                        {{ option.label }}
+                    </option>
+                </select>
             </div>
             
             <div class="actions-cell">
-                <Button 
-                    icon="pi pi-filter-slash" 
-                    severity="secondary" 
-                    outlined 
-                    @click="resetFilters" 
-                    tooltip="Reset filters" 
-                    :tooltipOptions="{ position: 'top' }"
-                    class="w-full"
-                />
+                <button @click="resetFilters" class="inline-flex justify-center items-center w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition duration-150 ease-in-out">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                    </svg>
+                </button>
             </div>
         </div>
     </div>

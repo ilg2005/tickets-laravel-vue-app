@@ -2,8 +2,7 @@
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
-import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import Button from '@/Components/Button.vue';
 
 const props = defineProps({
     followup: {
@@ -63,16 +62,18 @@ const cancelEditing = () => {
                 </div>
             </div>
             <div>
-                <Tag :style="{ backgroundColor: followup.type === 'comment' ? '#FFBF00' : '#1E90FF' }" style="color: white">
+                <span :class="followup.type === 'comment' ? 'bg-yellow-500' : 'bg-blue-500'" class="text-white px-2 py-1 rounded">
                     {{ followup.type }}
-                </Tag>
+                </span>
                 <div class="flex justify-end" v-if="isEdit">
                     <Button v-if="followup.user_id === currentUser.id"
-                        icon="pi pi-pencil" text size="small" severity="secondary"
-                        @click="startEditing" />
+                        class="text-secondary" @click="startEditing">
+                        <i class="pi pi-pencil"></i>
+                    </Button>
                     <Button v-if="currentUser.is_admin || followup.user_id === currentUser.id"
-                        icon="pi pi-trash" text size="small" severity="danger"
-                        @click="$emit('delete', followup.id)" />
+                        class="text-danger" @click="$emit('delete', followup.id)">
+                        <i class="pi pi-trash"></i>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -83,8 +84,8 @@ const cancelEditing = () => {
                 rows="4"></textarea>
             <InputError :message="editForm.errors.content" class="mt-2" />
             <div class="flex justify-end gap-2 mt-2">
-                <Button label="Cancel" severity="secondary" @click="cancelEditing" />
-                <Button label="Save" severity="primary" @click="$emit('update', editForm)" />
+                <Button class="text-secondary" @click="cancelEditing">Cancel</Button>
+                <Button class="text-primary" @click="$emit('update', editForm)">Save</Button>
             </div>
         </div>
         <p v-else class="mt-2 text-gray-700">{{ followup.content }}</p>
