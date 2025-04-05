@@ -6,6 +6,7 @@ import TicketFilter from "@/Pages/Tickets/TicketFilter.vue";
 import { ref, computed } from "vue";
 import Button from "@/Components/Button.vue";
 import { usePermission } from "@/Composables/permissions.js";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 const page = usePage();
 const { flash } = page.props;
@@ -124,18 +125,10 @@ const getModifiedUrl = (url) => {
                         <button
                             class="inline-flex items-center px-4 py-2 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
+                            <font-awesome-icon
+                                icon="fa-solid fa-plus"
                                 class="h-5 w-5 mr-1"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path
-                                    fill-rule="evenodd"
-                                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                                    clip-rule="evenodd"
-                                />
-                            </svg>
+                            />
                             Add Ticket
                         </button>
                     </Link>
@@ -146,7 +139,7 @@ const getModifiedUrl = (url) => {
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div
-                    class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6"
+                    class="bg-white shadow-sm sm:rounded-lg p-6 overflow-hidden"
                 >
                     <!-- Filter component -->
                     <TicketFilter
@@ -156,292 +149,224 @@ const getModifiedUrl = (url) => {
                         @reset-filters="resetFilters"
                     />
 
-                    <div class="overflow-x-auto">
-                        <div
-                            class="grid grid-cols-7 gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50"
-                        >
-                            <div
-                                @click="onSort('id')"
-                                class="px-4 py-2 cursor-pointer"
-                            >
-                                #
-                            </div>
-                            <div
-                                v-if="isAdmin"
-                                @click="onSort('user_name')"
-                                class="px-4 py-2 cursor-pointer"
-                            >
-                                User
-                            </div>
-                            <div
-                                @click="onSort('title')"
-                                class="px-4 py-2 cursor-pointer"
-                            >
-                                Title
-                            </div>
-                            <div class="px-4 py-2">Description</div>
-                            <div
-                                @click="onSort('status')"
-                                class="px-2 py-2 cursor-pointer"
-                            >
-                                Status
-                            </div>
-                            <div
-                                @click="onSort('priority')"
-                                class="px-2 py-2 cursor-pointer"
-                            >
-                                Priority
-                            </div>
-                            <div class="px-4 py-2">Actions</div>
+                    <!-- Информация о записях и выбор количества -->
+                    <div class="flex flex-wrap justify-between items-center mb-4">
+                        <div class="text-sm text-gray-700">
+                            Показано {{ tickets.from }} - {{ tickets.to }} из
+                            {{ tickets.total }} записей
                         </div>
-                        <div
-                            v-for="ticket in tickets.data"
-                            :key="ticket.id"
-                            class="grid grid-cols-7 gap-4 text-sm text-gray-500 divide-y divide-gray-200"
-                        >
-                            <div class="px-4 py-2">{{ ticket.id }}</div>
-                            <div v-if="isAdmin" class="px-4 py-2">
-                                {{ ticket.user ? ticket.user.name : "-" }}
-                            </div>
-                            <div class="px-4 py-2">{{ ticket.title }}</div>
-                            <div class="px-4 py-2">
-                                {{ ticket.description }}
-                            </div>
-                            <div class="px-2 py-2">
-                                <span
-                                    :class="
-                                        getPriorityColorClass(ticket.status)
-                                    "
+                        <div class="flex items-center space-x-2">
+                            <label for="per-page" class="text-sm text-gray-600">
+                                Записей на страницу:
+                            </label>
+                            <select
+                                id="per-page"
+                                v-model="perPage"
+                                @change="changePerPage"
+                                class="text-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md shadow-sm"
+                            >
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Таблица в контейнере с прокруткой -->
+                    <div class="table-outer-container">
+                        <div class="table-container">
+                            <div
+                                class="grid grid-filter-container text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-100"
+                            >
+                                <div
+                                    @click="onSort('id')"
+                                    class="id-cell px-4 py-2 cursor-pointer"
                                 >
-                                    {{ ticket.status }}
-                                </span>
-                            </div>
-                            <div class="px-2 py-2">
-                                <span
-                                    :class="
-                                        getPriorityColorClass(ticket.priority)
-                                    "
+                                    #
+                                </div>
+                                <div
+                                    v-if="isAdmin"
+                                    @click="onSort('user_name')"
+                                    class="user-cell px-4 py-2 cursor-pointer"
                                 >
-                                    {{ ticket.priority }}
-                                </span>
+                                    User
+                                </div>
+                                <div
+                                    @click="onSort('title')"
+                                    class="title-cell px-4 py-2 cursor-pointer"
+                                >
+                                    Title
+                                </div>
+                                <div class="description-cell px-4 py-2">
+                                    Description
+                                </div>
+                                <div
+                                    @click="onSort('status')"
+                                    class="status-cell px-2 py-2 cursor-pointer"
+                                >
+                                    Status
+                                </div>
+                                <div
+                                    @click="onSort('priority')"
+                                    class="priority-cell px-2 py-2 cursor-pointer"
+                                >
+                                    Priority
+                                </div>
+                                <div class="actions-cell px-4 py-2">Actions</div>
                             </div>
-                            <div class="px-4 py-2">
-                                <div class="flex space-x-2">
-                                    <Link
-                                        :href="route('tickets.show', ticket.id)"
-                                        class="p-2 text-blue-500 hover:text-blue-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
-                                        title="View"
+                            <div
+                                v-for="(ticket, index) in tickets.data"
+                                :key="ticket.id"
+                                class="grid grid-filter-container text-sm text-gray-500 hover:bg-gray-100 transition-colors duration-150"
+                                :class="{ 'bg-gray-50': index % 2 !== 0 }"
+                            >
+                                <div class="id-cell px-4 py-2">{{ ticket.id }}</div>
+                                <div v-if="isAdmin" class="user-cell px-4 py-2">
+                                    {{ ticket.user ? ticket.user.name : "-" }}
+                                </div>
+                                <div class="title-cell px-4 py-2">
+                                    {{ ticket.title }}
+                                </div>
+                                <div class="description-cell px-4 py-2">
+                                    {{ ticket.description }}
+                                </div>
+                                <div class="status-cell px-2 py-2">
+                                    <span
+                                        :class="
+                                            getPriorityColorClass(ticket.status)
+                                        "
                                     >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            class="h-5 w-5"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                        >
-                                            <path
-                                                d="M10 12a2 2 0 100-4 2 2 0 000 4z"
-                                            />
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                    </Link>
-                                    <Link
-                                        :href="route('tickets.edit', ticket.id)"
-                                        class="p-2 text-yellow-500 hover:text-yellow-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
-                                        title="Edit"
+                                        {{ ticket.status }}
+                                    </span>
+                                </div>
+                                <div class="priority-cell px-2 py-2">
+                                    <span
+                                        :class="
+                                            getPriorityColorClass(ticket.priority)
+                                        "
                                     >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            class="h-5 w-5"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
+                                        {{ ticket.priority }}
+                                    </span>
+                                </div>
+                                <div class="actions-cell px-4 py-2">
+                                    <div class="flex space-x-2">
+                                        <Link
+                                            :href="route('tickets.show', ticket.id)"
+                                            class="p-2 text-blue-500 hover:text-blue-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
+                                            title="View"
                                         >
-                                            <path
-                                                d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                                            <font-awesome-icon
+                                                icon="fa-solid fa-eye"
+                                                class="h-5 w-5"
                                             />
-                                        </svg>
-                                    </Link>
-                                    <button
-                                        @click="() => deleteConfirm(ticket.id)"
-                                        class="p-2 text-red-500 hover:text-red-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
-                                        title="Delete"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            class="h-5 w-5"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
+                                        </Link>
+                                        <Link
+                                            :href="route('tickets.edit', ticket.id)"
+                                            class="p-2 text-yellow-500 hover:text-yellow-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
+                                            title="Edit"
                                         >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                                clip-rule="evenodd"
+                                            <font-awesome-icon
+                                                icon="fa-solid fa-pen-to-square"
+                                                class="h-5 w-5"
                                             />
-                                        </svg>
-                                    </button>
+                                        </Link>
+                                        <button
+                                            @click="() => deleteConfirm(ticket.id)"
+                                            class="p-2 text-red-500 hover:text-red-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
+                                            title="Delete"
+                                        >
+                                            <font-awesome-icon
+                                                icon="fa-solid fa-trash-can"
+                                                class="h-5 w-5"
+                                            />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Отступ между таблицей и пагинацией -->
+                    <div class="my-6"></div>
+
                     <!-- Pagination -->
                     <div
-                        class="mt-6 px-4 py-3 border-t border-gray-200 sm:px-6"
+                        class="pagination-container px-4 py-3 flex justify-center"
                     >
-                        <div
-                            class="flex flex-col sm:flex-row justify-between items-center"
-                        >
-                            <div class="text-sm text-gray-700 mb-4 sm:mb-0">
-                                Показано {{ tickets.from }} -
-                                {{ tickets.to }} из {{ tickets.total }} записей
-                            </div>
-                            <div class="flex items-center space-x-4">
-                                <nav
-                                    class="inline-flex shadow-sm -space-x-px rounded-md overflow-hidden"
-                                    aria-label="Pagination"
+                        <nav class="flex rounded-md" aria-label="Pagination">
+                            <!-- Previous Page -->
+                            <Link
+                                v-if="tickets.prev_page_url"
+                                :href="getModifiedUrl(tickets.prev_page_url)"
+                                class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50"
+                            >
+                                <font-awesome-icon
+                                    class="h-5 w-5"
+                                    icon="fa-solid fa-chevron-left"
+                                />
+                                <span class="sr-only">Предыдущая</span>
+                            </Link>
+                            <span
+                                v-else
+                                class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-300 bg-white border border-gray-300 cursor-not-allowed"
+                            >
+                                <font-awesome-icon
+                                    class="h-5 w-5"
+                                    icon="fa-solid fa-chevron-left"
+                                />
+                                <span class="sr-only">Предыдущая</span>
+                            </span>
+
+                            <!-- Page Links -->
+                            <template
+                                v-for="link in tickets.links.slice(1, -1)"
+                                :key="link.label"
+                            >
+                                <Link
+                                    v-if="link.url"
+                                    :href="getModifiedUrl(link.url)"
+                                    :class="[
+                                        link.active
+                                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                                        'relative inline-flex items-center px-4 py-2 text-sm font-medium border',
+                                    ]"
                                 >
-                                    <!-- Previous Page -->
-                                    <Link
-                                        v-if="tickets.prev_page_url"
-                                        :href="
-                                            getModifiedUrl(
-                                                tickets.prev_page_url
-                                            )
-                                        "
-                                        class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50"
-                                    >
-                                        <svg
-                                            class="h-5 w-5"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                        <span class="sr-only">Предыдущая</span>
-                                    </Link>
-                                    <span
-                                        v-else
-                                        class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-300 bg-white border border-gray-300 cursor-not-allowed"
-                                    >
-                                        <svg
-                                            class="h-5 w-5"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                        <span class="sr-only">Предыдущая</span>
-                                    </span>
+                                    {{ link.label }}
+                                </Link>
+                                <span
+                                    v-else
+                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
+                                >
+                                    ...
+                                </span>
+                            </template>
 
-                                    <!-- Page Links -->
-                                    <template
-                                        v-for="link in tickets.links.slice(
-                                            1,
-                                            -1
-                                        )"
-                                        :key="link.label"
-                                    >
-                                        <Link
-                                            v-if="link.url"
-                                            :href="getModifiedUrl(link.url)"
-                                            :class="[
-                                                link.active
-                                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
-                                                'relative inline-flex items-center px-4 py-2 text-sm font-medium border',
-                                            ]"
-                                        >
-                                            {{ link.label }}
-                                        </Link>
-                                        <span
-                                            v-else
-                                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
-                                        >
-                                            ...
-                                        </span>
-                                    </template>
-
-                                    <!-- Next Page -->
-                                    <Link
-                                        v-if="tickets.next_page_url"
-                                        :href="
-                                            getModifiedUrl(
-                                                tickets.next_page_url
-                                            )
-                                        "
-                                        class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50"
-                                    >
-                                        <span class="sr-only">Следующая</span>
-                                        <svg
-                                            class="h-5 w-5"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                    </Link>
-                                    <span
-                                        v-else
-                                        class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-300 bg-white border border-gray-300 cursor-not-allowed"
-                                    >
-                                        <span class="sr-only">Следующая</span>
-                                        <svg
-                                            class="h-5 w-5"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                    </span>
-                                </nav>
-                                <div class="flex items-center space-x-2 ml-4">
-                                    <label
-                                        for="per-page"
-                                        class="text-sm text-gray-600"
-                                        >Записей:</label
-                                    >
-                                    <select
-                                        id="per-page"
-                                        v-model="perPage"
-                                        @change="changePerPage"
-                                        class="text-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                                    >
-                                        <option value="10">10</option>
-                                        <option value="15">15</option>
-                                        <option value="25">25</option>
-                                        <option value="50">50</option>
-                                        <option value="100">100</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                            <!-- Next Page -->
+                            <Link
+                                v-if="tickets.next_page_url"
+                                :href="getModifiedUrl(tickets.next_page_url)"
+                                class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50"
+                            >
+                                <span class="sr-only">Следующая</span>
+                                <font-awesome-icon
+                                    class="h-5 w-5"
+                                    icon="fa-solid fa-chevron-right"
+                                />
+                            </Link>
+                            <span
+                                v-else
+                                class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-300 bg-white border border-gray-300 cursor-not-allowed"
+                            >
+                                <span class="sr-only">Следующая</span>
+                                <font-awesome-icon
+                                    class="h-5 w-5"
+                                    icon="fa-solid fa-chevron-right"
+                                />
+                            </span>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -455,5 +380,95 @@ const getModifiedUrl = (url) => {
     .grid {
         grid-template-columns: repeat(1, minmax(0, 1fr));
     }
+}
+
+/* Стили для таблицы и фильтров */
+.table-outer-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    margin-bottom: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+}
+
+/* Скрываем полосу прокрутки только в Firefox */
+@-moz-document url-prefix() {
+    .table-outer-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+    }
+}
+
+/* Стилизуем полосу прокрутки для Webkit браузеров (Chrome, Safari) */
+.table-outer-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-outer-container::-webkit-scrollbar-track {
+    background-color: #f9fafb;
+    border-radius: 3px;
+}
+
+.table-outer-container::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+}
+
+.grid-filter-container {
+    display: grid;
+    grid-template-columns: 5% 10% 12% 33% 12% 12% 10%;
+    gap: 0;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 800px;
+}
+
+/* Если админ не активирован, скрываем колонку user */
+:root:not(.admin-active) .grid-filter-container {
+    grid-template-columns: 5% 0% 12% 43% 12% 12% 10%;
+}
+
+.id-cell {
+    grid-column: 1;
+}
+.user-cell {
+    grid-column: 2;
+}
+.title-cell {
+    grid-column: 3;
+}
+.description-cell {
+    grid-column: 4;
+}
+.status-cell {
+    grid-column: 5;
+}
+.priority-cell {
+    grid-column: 6;
+}
+.actions-cell {
+    grid-column: 7;
+}
+
+.table-container {
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.pagination-container {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid #e5e7eb;
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import InputText from '@/Components/InputText.vue';
-import Button from '@/Components/Button.vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const props = defineProps({
     filters: {
@@ -75,26 +75,31 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="filter-container px-2 py-4 mb-4">
+    <div class="filter-container">
         <div class="grid-filter-container">
             <div class="id-cell">
-                <InputText v-model="id" placeholder="ID" class="w-full" @input="emitChanges" />
+                <label for="filter-id" class="block text-xs font-medium text-gray-500 mb-1 md:hidden">#</label>
+                <InputText id="filter-id" v-model="id" placeholder="ID" class="w-full" @input="emitChanges" />
             </div>
             
             <div v-if="isAdmin" class="user-cell">
-                <InputText v-model="user_name" placeholder="User" class="w-full" @input="emitChanges" />
+                <label for="filter-user" class="block text-xs font-medium text-gray-500 mb-1 md:hidden">User</label>
+                <InputText id="filter-user" v-model="user_name" placeholder="User" class="w-full" @input="emitChanges" />
             </div>
             
             <div class="title-cell">
-                <InputText v-model="title" placeholder="Title" class="w-full" @input="emitChanges" />
+                <label for="filter-title" class="block text-xs font-medium text-gray-500 mb-1 md:hidden">Title</label>
+                <InputText id="filter-title" v-model="title" placeholder="Title" class="w-full" @input="emitChanges" />
             </div>
             
             <div class="description-cell">
-                <InputText v-model="description" placeholder="Description" class="w-full" @input="emitChanges" />
+                <label for="filter-desc" class="block text-xs font-medium text-gray-500 mb-1 md:hidden">Description</label>
+                <InputText id="filter-desc" v-model="description" placeholder="Description" class="w-full" @input="emitChanges" />
             </div>
             
             <div class="status-cell">
-                <select v-model="status" @change="emitChanges" class="w-full border-gray-300 rounded-md shadow-sm">
+                <label for="filter-status" class="block text-xs font-medium text-gray-500 mb-1 md:hidden">Status</label>
+                <select id="filter-status" v-model="status" @change="emitChanges" class="w-full border-gray-300 rounded-md shadow-sm">
                     <option value="" disabled>Status</option>
                     <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                         {{ option.label }}
@@ -103,7 +108,8 @@ onUnmounted(() => {
             </div>
             
             <div class="priority-cell">
-                <select v-model="priority" @change="emitChanges" class="w-full border-gray-300 rounded-md shadow-sm">
+                <label for="filter-priority" class="block text-xs font-medium text-gray-500 mb-1 md:hidden">Priority</label>
+                <select id="filter-priority" v-model="priority" @change="emitChanges" class="w-full border-gray-300 rounded-md shadow-sm">
                     <option value="" disabled>Priority</option>
                     <option v-for="option in priorityOptions" :key="option.value" :value="option.value">
                         {{ option.label }}
@@ -111,11 +117,9 @@ onUnmounted(() => {
                 </select>
             </div>
             
-            <div class="actions-cell">
-                <button @click="resetFilters" class="inline-flex justify-center items-center w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 transition duration-150 ease-in-out">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-                    </svg>
+            <div class="actions-cell">                
+                <button @click="resetFilters" class="reset-button">
+                    <font-awesome-icon icon="fa-solid fa-rotate-left" />
                 </button>
             </div>
         </div>
@@ -125,7 +129,13 @@ onUnmounted(() => {
 <style scoped>
 .filter-container {
     background-color: white;
-    border: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    width: 100%;
+    max-width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 0.5rem;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
 }
 
 .grid-filter-container {
@@ -133,6 +143,7 @@ onUnmounted(() => {
     grid-template-columns: 5% 10% 12% 33% 12% 12% 10%;
     gap: 8px;
     align-items: center;
+    width: 100%;
 }
 
 /* Если админ не активирован, скрываем колонку user */
@@ -146,7 +157,20 @@ onUnmounted(() => {
 .description-cell { grid-column: 4; }
 .status-cell { grid-column: 5; }
 .priority-cell { grid-column: 6; }
-.actions-cell { grid-column: 7; }
+.actions-cell { 
+    grid-column: 7;
+    display: flex;
+    justify-content: center;
+}
+
+.actions-cell button {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 /* Стили для инпутов, чтобы они выглядели единообразно */
 :deep(.p-inputtext),
@@ -155,8 +179,36 @@ onUnmounted(() => {
     height: 2.5rem;
 }
 
-/* Адаптивная верстка для мобильных устройств */
-@media (max-width: 768px) {
+/* Адаптивность для планшетов */
+@media (max-width: 1024px) {
+    .grid-filter-container {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    
+    :root:not(.admin-active) .grid-filter-container {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    
+    .id-cell { grid-column: 1; grid-row: 1; }
+    .user-cell { grid-column: 2; grid-row: 1; }
+    .title-cell { grid-column: 3; grid-row: 1; }
+    .description-cell { grid-column: 1; grid-row: 2; }
+    .status-cell { grid-column: 2; grid-row: 2; }
+    .priority-cell { grid-column: 3; grid-row: 2; }
+    .actions-cell { 
+        grid-column: 1; 
+        grid-row: 3; 
+        justify-content: flex-start;
+    }
+    
+    .actions-cell button {
+        width: auto;
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 640px) {
     .grid-filter-container {
         display: flex;
         flex-direction: column;
@@ -166,6 +218,59 @@ onUnmounted(() => {
     .id-cell, .user-cell, .title-cell, .description-cell,
     .status-cell, .priority-cell, .actions-cell {
         width: 100%;
+    }
+    
+    .actions-cell {
+        justify-content: flex-start;
+    }
+    
+    .actions-cell button {
+        width: 100%;
+    }
+}
+
+.reset-button {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    color: #6b7280;
+    transition: all 0.15s ease-in-out;
+}
+
+.reset-button:hover {
+    background-color: #e5e7eb;
+    color: #4b5563;
+}
+
+/* Иконка внутри кнопки */
+.reset-button .svg-inline--fa {
+    width: 1rem;
+    height: 1rem;
+}
+
+@media (max-width: 1024px) {
+    .reset-button {
+        width: auto;
+        padding: 0.5rem 1rem;
+    }
+    
+    .reset-button .svg-inline--fa {
+        width: 1rem;
+        height: 1rem;
+        margin-right: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .reset-button {
+        width: 100%;
+        padding: 0.5rem;
     }
 }
 </style>
