@@ -24,7 +24,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('followups.store'), {
+    form.post(route('ticket.followups.store'), {
         onSuccess: () => {
             // Простая перезагрузка страницы после успешного добавления
             window.location.reload();

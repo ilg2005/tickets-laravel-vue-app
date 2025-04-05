@@ -4,8 +4,8 @@ import InputError from '@/Components/InputError.vue';
 import { computed, ref, watch } from 'vue';
 import { usePermission } from '@/Composables/permissions.js';
 import { usePage } from "@inertiajs/vue3";
-import FollowupsList from '@/Pages/Tickets/Followups/FollowupsList.vue';
-import CreateFollowupForm from '@/Pages/Tickets/Followups/CreateFollowupForm.vue';
+import FollowupsList from '../Partial/Followups/FollowupsList.vue';
+import CreateFollowupForm from '../Partial/Followups/CreateFollowupForm.vue';
 import FileUploader from '@/Components/FileUploader.vue';
 
 const { props } = usePage();
@@ -84,11 +84,11 @@ function handleFileChange(event) {
 
 const save = () => {
     if (isEdit.value) {
-        form.put(route('tickets.update', ticketProps.ticket.id), {
+        form.put(route('ticket.update', ticketProps.ticket.id), {
             onSuccess: () => alert('Ticket updated successfully'),
         });
     } else if (isCreate.value) {
-        form.post(route('tickets.store'), {
+        form.post(route('ticket.store'), {
             onSuccess: () => {
                 alert('Ticket created successfully');
                 form.reset();
@@ -105,7 +105,7 @@ const save = () => {
 };
 
 const saveFollowUps = () => {
-    followupForm.post(route('followups.store'), {
+    followupForm.post(route('ticket.followups.store'), {
         onSuccess: (response) => {
             const message = response.props.flash.success || 'Follow-up added';
             alert(message);
@@ -147,7 +147,7 @@ const cancelEditingFollowup = () => {
 };
 
 const saveEditedFollowup = () => {
-    editFollowupForm.put(route('followups.update', editFollowupForm.followup_id), {
+    editFollowupForm.put(route('ticket.followups.update', editFollowupForm.followup_id), {
         onSuccess: (response) => {
             const message = response.props.flash.success || 'Follow-up updated';
             alert(message);
@@ -174,12 +174,12 @@ const createdDate = computed(() => formatDate(ticketProps.ticket?.created_at));
 const updatedDate = computed(() => formatDate(ticketProps.ticket?.updated_at));
 
 const goBack = () => {
-    router.visit(route('tickets.index'));
+    router.visit(route('ticket.index'));
 };
 
 const deleteConfirm = (followupId) => {
     if (confirm('Are you sure you want to proceed?')) {
-        deleteFollowupForm.delete(route("followups.destroy", { id: followupId }), {
+        deleteFollowupForm.delete(route("ticket.followups.destroy", { id: followupId }), {
             preserveScroll: true,
             onSuccess: () => {
                 alert('Follow-up deleted successfully');
@@ -205,7 +205,7 @@ const formatFileSize = (bytes) => {
 };
 
 const handleFollowupDelete = (followupId) => {
-    deleteFollowupForm.delete(route("followups.destroy", { id: followupId }), {
+    deleteFollowupForm.delete(route("ticket.followups.destroy", { id: followupId }), {
         preserveScroll: true,
         onSuccess: () => {
             alert('Follow-up deleted successfully');
@@ -218,7 +218,7 @@ const handleFollowupDelete = (followupId) => {
 };
 
 const handleFollowupUpdate = (form) => {
-    form.put(route('followups.update', form.followup_id), {
+    form.put(route('ticket.followups.update', form.followup_id), {
         onSuccess: (response) => {
             const updatedFollowup = response.props.ticket.followups.find(f => f.id === form.followup_id);
             const index = ticketProps.ticket.followups.findIndex(f => f.id === updatedFollowup.id);
@@ -322,8 +322,8 @@ const handleFilesUpdated = (updatedFiles) => {
                             <div class="flex items-center overflow-hidden mr-2">
                                 <i class="pi pi-file mr-2 text-gray-500"></i>
                                 <a :href="file.is_followup 
-                                        ? route('followups.files.download', { file_id: file.id })
-                                        : route('tickets.files.download', { file_id: file.id })"
+                                        ? route('ticket.followups.files.download', { file_id: file.id })
+                                        : route('ticket.files.download', { file_id: file.id })"
                                    class="text-indigo-600 hover:text-indigo-800 hover:underline truncate"
                                    :title="file.original_filename">
                                     {{ file.original_filename }}

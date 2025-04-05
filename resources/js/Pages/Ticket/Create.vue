@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import CreateTicketForm from './CreateTicketForm.vue';
+import CreateTicketForm from './Partial/CreateTicketForm.vue';
 import { Head } from '@inertiajs/vue3';
 </script>
 

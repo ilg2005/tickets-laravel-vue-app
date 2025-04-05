@@ -50,7 +50,7 @@ class TicketController extends Controller
         // Получаем отфильтрованные и отсортированные тикеты с использованием сервиса
         $data = $this->ticketFilterService->getFilteredTickets($request);
         
-        return Inertia::render('Tickets/Index', $data);
+        return Inertia::render('Ticket/Index', $data);
     }
 
     /**
@@ -58,7 +58,7 @@ class TicketController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Tickets/Create');
+        return Inertia::render('Ticket/Create');
     }
 
     /**
@@ -81,7 +81,7 @@ class TicketController extends Controller
         // Используем единый метод для валидации и загрузки файлов
         $this->fileService->validateAndUpload($ticket, $request);
         
-        return redirect()->route('tickets.index');
+        return redirect()->route('ticket.index');
     }
 
     /**
@@ -98,7 +98,7 @@ class TicketController extends Controller
         // Получаем все файлы (тикета и follow-up)
         $allFiles = $ticket->getAllFiles();
 
-        return Inertia::render('Tickets/Show', [
+        return Inertia::render('Ticket/Show', [
             'ticket' => $ticket,
             'allFiles' => $allFiles,
         ]);
@@ -118,7 +118,7 @@ class TicketController extends Controller
         // Получаем все файлы (тикета и follow-up)
         $allFiles = $ticket->getAllFiles();
 
-        return Inertia::render('Tickets/Edit', [
+        return Inertia::render('Ticket/Edit', [
             'ticket' => $ticket,
             'allFiles' => $allFiles,
         ]);
@@ -144,7 +144,7 @@ class TicketController extends Controller
             $query->latest(); // Load followups in descending order by created_at
         }, 'followups.user']);
 
-        return redirect()->route('tickets.index');
+        return redirect()->route('ticket.index');
     }
 
     /**
@@ -156,7 +156,7 @@ class TicketController extends Controller
 
         $ticket->delete();
 
-        return redirect()->route('tickets.index');
+        return redirect()->route('ticket.index');
     }
     
     /**
@@ -193,7 +193,7 @@ class TicketController extends Controller
         $allTickets = $query->get();
         
         // Возвращаем данные для отображения
-        return Inertia::render('Tickets/AllTickets', [
+        return Inertia::render('Ticket/AllTickets', [
             'tickets' => $allTickets,
             'isAdmin' => $isAdmin,
             'totalCount' => $allTickets->count()

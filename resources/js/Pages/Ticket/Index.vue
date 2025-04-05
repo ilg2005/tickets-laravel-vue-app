@@ -1,8 +1,8 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { useForm, Head, Link, usePage, router } from "@inertiajs/vue3";
-import CreateTicketForm from "./CreateTicketForm.vue";
-import TicketFilter from "@/Pages/Tickets/TicketFilter.vue";
+import CreateTicketForm from "./Partial/CreateTicketForm.vue";
+import TicketFilter from "./Partial/TicketFilter.vue";
 import { ref, computed } from "vue";
 import { usePermission } from "@/Composables/permissions.js";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -57,7 +57,7 @@ const onSort = (field) => {
 
 const applyFilters = () => {
     router.get(
-        route("tickets.index"),
+        route("ticket.index"),
         {
             filters: filters.value,
             sort: sort.value,
@@ -77,7 +77,7 @@ const changePerPage = () => {
 
 const deleteConfirm = (id) => {
     if (confirm("Are you sure you want to proceed?")) {
-        form.delete(route("tickets.destroy", { id: id }), {
+        form.delete(route("ticket.destroy", { id: id }), {
             preserveScroll: true,
             onSuccess: () => alert("Ticket deleted successfully"),
         });
@@ -139,7 +139,7 @@ library.add(faSort, faSortUp, faSortDown);
                 <div
                     class="flex flex-wrap items-center justify-end gap-2 min-h-8 mb-4"
                 >
-                    <Link v-if="isUser" :href="route('tickets.create')">
+                    <Link v-if="isUser" :href="route('ticket.create')">
                         <button
                             class="inline-flex items-center px-4 py-2 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
                         >
@@ -327,7 +327,7 @@ library.add(faSort, faSortUp, faSortDown);
                                 <div class="actions-cell">
                                     <div class="flex space-x-2">
                                         <Link
-                                            :href="route('tickets.show', ticket.id)"
+                                            :href="route('ticket.show', ticket.id)"
                                             class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
                                             title="View"
                                         >
@@ -337,7 +337,7 @@ library.add(faSort, faSortUp, faSortDown);
                                             />
                                         </Link>
                                         <Link
-                                            :href="route('tickets.edit', ticket.id)"
+                                            :href="route('ticket.edit', ticket.id)"
                                             class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
                                             title="Edit"
                                         >

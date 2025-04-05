@@ -33,20 +33,20 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::resource('tickets', TicketController::class)
+Route::resource('ticket', TicketController::class)
     ->middleware(['auth', 'verified']);
 
 Route::middleware(['auth'])->group(function () {
-    // Route::post('/followups', [FollowupController::class, 'store'])->middleware('can.create.solution')->name('followups.store');
-    Route::post('/followups', [FollowupController::class, 'store'])->name('followups.store');
-    Route::put('/followups/{followup}', [FollowupController::class, 'update'])->name('followups.update');
-    Route::delete('/followups/{followup}', [FollowupController::class, 'destroy'])->name('followups.destroy');
+    // Маршруты для followups
+    Route::post('/ticket/followups', [FollowupController::class, 'store'])->name('ticket.followups.store');
+    Route::put('/ticket/followups/{followup}', [FollowupController::class, 'update'])->name('ticket.followups.update');
+    Route::delete('/ticket/followups/{followup}', [FollowupController::class, 'destroy'])->name('ticket.followups.destroy');
     
     // Маршруты для скачивания файлов
-    Route::get('/tickets/files/{file_id}', [TicketController::class, 'downloadFile'])
-        ->name('tickets.files.download');
-    Route::get('/followups/files/{file_id}', [FollowupController::class, 'downloadFile'])
-        ->name('followups.files.download');
+    Route::get('/ticket/files/{file_id}', [TicketController::class, 'downloadFile'])
+        ->name('ticket.files.download');
+    Route::get('/ticket/followups/files/{file_id}', [FollowupController::class, 'downloadFile'])
+        ->name('ticket.followups.files.download');
 });
 
 

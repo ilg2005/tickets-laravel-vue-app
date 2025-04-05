@@ -39,7 +39,7 @@ const isAdmin = hasRole('admin');
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </NavLink>
-                                <NavLink :href="route('tickets.index')" :active="route().current('tickets.index')">
+                                <NavLink :href="route('ticket.index')" :active="route().current('ticket.index')">
                                     Tickets
                                 </NavLink>
                                 <NavLink v-if="isAdmin" :href="route('administration')"
@@ -107,7 +107,7 @@ const isAdmin = hasRole('admin');
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('tickets.index')" :active="route().current('tickets.index')">
+                        <ResponsiveNavLink :href="route('ticket.index')" :active="route().current('ticket.index')">
                             Tickets
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('administration')" :active="route().current('administration')">
