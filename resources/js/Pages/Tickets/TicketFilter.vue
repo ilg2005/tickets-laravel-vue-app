@@ -141,7 +141,7 @@ onUnmounted(() => {
 .grid-filter-container {
     display: grid;
     grid-template-columns: 5% 10% 12% 33% 12% 12% 10%;
-    gap: 8px;
+    gap: 0;
     align-items: center;
     width: 100%;
 }
@@ -151,16 +151,35 @@ onUnmounted(() => {
     grid-template-columns: 5% 0% 12% 43% 12% 12% 10%;
 }
 
-.id-cell { grid-column: 1; }
-.user-cell { grid-column: 2; }
-.title-cell { grid-column: 3; }
-.description-cell { grid-column: 4; }
-.status-cell { grid-column: 5; }
-.priority-cell { grid-column: 6; }
+.id-cell { 
+    grid-column: 1; 
+    padding: 0 0.5rem 0 0.5rem;
+}
+.user-cell { 
+    grid-column: 2; 
+    padding: 0 0.5rem;
+}
+.title-cell { 
+    grid-column: 3; 
+    padding: 0 0.5rem;
+}
+.description-cell { 
+    grid-column: 4; 
+    padding: 0 0.5rem;
+}
+.status-cell { 
+    grid-column: 5; 
+    padding: 0 0.125rem;
+}
+.priority-cell { 
+    grid-column: 6; 
+    padding: 0 0.125rem;
+}
 .actions-cell { 
     grid-column: 7;
     display: flex;
     justify-content: center;
+    padding: 0 0.5rem;
 }
 
 .actions-cell button {
