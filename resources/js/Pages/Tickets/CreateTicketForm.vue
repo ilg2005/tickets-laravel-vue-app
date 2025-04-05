@@ -253,9 +253,9 @@ const handleFilesUpdated = (updatedFiles) => {
                 Back
             </button>
         </div>
-        <div class="grid md:grid-cols-3 h-full gap-8">
+        <div class="grid md:grid-cols-3 h-full gap-4 sm:gap-6 md:gap-8">
             <!-- Ticket form -->
-            <form @submit.prevent="save" class="w-full min-h-full">
+            <form @submit.prevent="save" class="w-full min-h-full md:col-span-1">
                 <div class="mb-4">
                     <label for="title" class="block text-sm font-medium"
                         :class="{ 'text-gray-500': isShow, 'text-gray-700': !isShow }">Title</label>
@@ -360,26 +360,26 @@ const handleFilesUpdated = (updatedFiles) => {
                     </div>
                 </template>
 
-                <div v-if="isEdit || isCreate" class="flex justify-end gap-2 mt-4">
+                <div v-if="isEdit || isCreate" class="flex justify-center gap-2 mt-6 button-container">
                     <button 
                         type="button" 
                         @click="form.reset(); form.clearErrors()" 
                         :disabled="form.processing" 
-                        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150 justify-center w-full sm:w-auto min-w-[100px]"
                     >
                         Cancel
                     </button>
                     <button 
                         type="submit" 
                         :disabled="form.processing" 
-                        class="inline-flex items-center px-4 py-2 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                        class="inline-flex items-center px-4 py-2 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 justify-center w-full sm:w-auto min-w-[100px]"
                     >
                         {{ isEdit ? 'Update Ticket' : 'Create Ticket' }}
                     </button>
                 </div>
             </form>
 
-            <div class="col-span-2">
+            <div class="md:col-span-2">
                 <div v-if="!isCreate">
                     <FollowupsList
                         :followups="ticketProps.ticket.followups"
@@ -402,3 +402,22 @@ const handleFilesUpdated = (updatedFiles) => {
         </div>
     </div>
 </template>
+
+<style scoped>
+@media (max-width: 768px) {
+    form {
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .button-container {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .button-container button {
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
