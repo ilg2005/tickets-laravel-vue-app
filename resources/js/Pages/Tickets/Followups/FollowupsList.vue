@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import FollowupItem from './FollowupItem.vue';
-import { router } from '@inertiajs/vue3';
+import { router, Link } from '@inertiajs/vue3';
 import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps({
@@ -15,6 +15,10 @@ const props = defineProps({
     },
     currentUser: {
         type: Object,
+        required: true
+    },
+    ticketId: {
+        type: Number,
         required: true
     }
 });
@@ -34,8 +38,7 @@ const deleteConfirm = (followupId) => {
 </script>
 
 <template>
-    <div>
-        <h2 class="text-lg font-semibold mb-4">Followups</h2>
+    <div>        
         <div class="overflow-auto" style="max-height: 400px;">
             <template v-if="followups.length > 0">
                 <FollowupItem

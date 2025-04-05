@@ -1,7 +1,7 @@
 <script setup>
 import { useForm, router } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
-import Button from '@/Components/Button.vue';
+import FileUploader from '@/Components/FileUploader.vue';
 
 const props = defineProps({
     ticketId: {
@@ -37,6 +37,11 @@ const handleFileChange = (e) => {
     form.files = e.target.files;
 };
 
+const resetForm = () => {
+    form.reset();
+    form.clearErrors();
+};
+
 // Функция для форматирования размера файлов
 const formatFileSize = (bytes) => {
     if (bytes < 1024) return bytes + ' B';
@@ -46,9 +51,9 @@ const formatFileSize = (bytes) => {
 </script>
 
 <template>
-    <form @submit.prevent="submit" class="w-full">
-        <div class="gap-4 p-4 grid grid-cols-3">
-            <div class="mb-4 col-span-2">
+    <form @submit.prevent="submit" class="w-full mt-6">
+        <div class="gap-4 p-4 grid-layout">
+            <div class="content-column mb-4">
                 <label for="followup-content" class="block text-sm font-medium">Follow-up Content</label>
                 <textarea v-model="form.content" id="followup-content"
                     class="block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
@@ -56,7 +61,7 @@ const formatFileSize = (bytes) => {
                 <InputError :message="form.errors.content" class="mt-2" />
             </div>
 
-            <div>
+            <div class="config-column min-w-[250px]">
                 <div class="mb-4">
                     <label for="followup-type" class="block text-sm font-medium">Follow-up Type</label>
                     <select :disabled="!canCreateSolution" v-model="form.type"
@@ -69,34 +74,93 @@ const formatFileSize = (bytes) => {
                 </div>
                 
                 <div class="mb-4">
-                    <label for="files" class="block text-sm font-medium">Attach Files</label>
-                    <p class="text-xs text-gray-500 mb-1">Max. 10MB per file. Allowed: jpg, png, pdf, doc(x), zip, rar, txt</p>
-                    <input
-                        id="files"
-                        type="file"
-                        multiple
-                        @change="handleFileChange"
-                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 border border-gray-300 rounded-md shadow-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    <FileUploader
+                        v-model="form.files"
+                        :errors="form.errors"
+                        fieldName="files"
+                        @file-change="handleFileChange"
                     />
-                    <div v-if="form.files && form.files.length > 0" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        <p>Selected files:</p>
-                        <ul>
-                            <li v-for="file in Array.from(form.files)" :key="file.name">
-                                {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
-                            </li>
-                        </ul>
-                    </div>
-                    <InputError class="mt-2" :message="form.errors.files" />
-                    <div v-for="(error, index) in form.errors" :key="index">
-                        <InputError v-if="index.startsWith('files.')" class="mt-1" :message="error" />
-                    </div>
                 </div>
                 
-                <div class="flex justify-end gap-2">
-                    <Button @click="form.reset(); form.clearErrors()" class="text-secondary">Cancel</Button>
-                    <Button type="submit" class="text-primary">Add Follow-up</Button>
+                <div class="flex justify-center gap-2 button-container">
+                    <button 
+                        type="button"
+                        @click="resetForm"
+                        class="inline-flex items-center justify-center h-8 px-3 py-1.5 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit"
+                        class="inline-flex items-center justify-center h-8 px-3 py-1.5 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 whitespace-nowrap"
+                    >
+                        Add Follow-up
+                    </button>
                 </div>
             </div>
         </div>
     </form>
 </template>
+
+<style scoped>
+.grid-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+}
+
+.content-column {
+    grid-column: 1;
+}
+
+.config-column {
+    grid-column: 2;
+}
+
+/* Адаптивная верстка для планшетов */
+@media (max-width: 1024px) {
+    .grid-layout {
+        grid-template-columns: 1.5fr 1fr;
+        gap: 16px;
+    }
+}
+
+/* Адаптивная верстка для мобильных устройств */
+@media (max-width: 768px) {
+    .grid-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .content-column {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    
+    .config-column {
+        grid-column: 1;
+        grid-row: 2;
+        margin-top: 16px;
+    }
+    
+    .button-container {
+        justify-content: space-between;
+    }
+    
+    .button-container button {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+    }
+}
+
+/* Для совсем маленьких экранов */
+@media (max-width: 480px) {
+    .button-container {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .button-container button {
+        width: 100%;
+    }
+}
+</style>

@@ -1,12 +1,12 @@
 <script setup>
 import { useForm, router } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
-import Button from '@/Components/Button.vue';
 import { computed, ref, watch } from 'vue';
 import { usePermission } from '@/Composables/permissions.js';
 import { usePage } from "@inertiajs/vue3";
 import FollowupsList from '@/Pages/Tickets/Followups/FollowupsList.vue';
 import CreateFollowupForm from '@/Pages/Tickets/Followups/CreateFollowupForm.vue';
+import FileUploader from '@/Components/FileUploader.vue';
 
 const { props } = usePage();
 
@@ -243,7 +243,15 @@ const handleFilesUpdated = (updatedFiles) => {
 <template>
     <div class="max-w-2xl mx-auto p-4 sm:px-6 md:max-w-full md:space-x-2 lg:px-8">
         <div class="flex mb-10">
-            <Button @click="goBack" class="text-secondary">Back</Button>
+            <button 
+                @click="goBack" 
+                class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none"
+            >
+                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back
+            </button>
         </div>
         <div class="grid md:grid-cols-3 h-full gap-8">
             <!-- Ticket form -->
@@ -297,28 +305,13 @@ const handleFilesUpdated = (updatedFiles) => {
                 </div>
 
                 <div class="mb-4" v-if="isCreate">
-                    <label for="files" class="block text-sm font-medium text-gray-700">Attach Files</label>
-                    <p class="text-xs text-gray-500 mb-1">Max. 10MB per file. Allowed: jpg, png, pdf, doc(x), zip, rar, txt</p>
-                    <input
-                        id="files"
-                        ref="fileInput"
-                        type="file"
-                        multiple
-                        @change="handleFileChange"
-                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 border border-gray-300 rounded-md shadow-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                    <FileUploader
+                        v-model="form.files"
+                        :errors="form.errors"
+                        fieldName="files"
+                        :input-ref="fileInput"
+                        @file-change="handleFileChange"
                     />
-                    <div v-if="form.files && form.files.length > 0" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        <p>Selected files:</p>
-                        <ul>
-                            <li v-for="file in Array.from(form.files)" :key="file.name">
-                                {{ file.name }} ({{ (file.size / 1024).toFixed(2) }} KB)
-                            </li>
-                        </ul>
-                    </div>
-                    <InputError class="mt-2" :message="form.errors.files" />
-                    <div v-for="(error, index) in form.errors" :key="index">
-                        <InputError v-if="index.startsWith('files.')" class="mt-1" :message="error" />
-                    </div>
                 </div>
 
                 <div class="mb-4" v-if="(isEdit || isShow) && allFiles.length > 0">
@@ -368,8 +361,21 @@ const handleFilesUpdated = (updatedFiles) => {
                 </template>
 
                 <div v-if="isEdit || isCreate" class="flex justify-end gap-2 mt-4">
-                    <Button @click="form.reset(); form.clearErrors()" :disabled="form.processing" class="text-secondary">Cancel</Button>
-                    <Button type="submit" :disabled="form.processing" class="text-primary">{{ isEdit ? 'Update Ticket' : 'Create Ticket' }}</Button>
+                    <button 
+                        type="button" 
+                        @click="form.reset(); form.clearErrors()" 
+                        :disabled="form.processing" 
+                        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit" 
+                        :disabled="form.processing" 
+                        class="inline-flex items-center px-4 py-2 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                        {{ isEdit ? 'Update Ticket' : 'Create Ticket' }}
+                    </button>
                 </div>
             </form>
 
@@ -379,6 +385,7 @@ const handleFilesUpdated = (updatedFiles) => {
                         :followups="ticketProps.ticket.followups"
                         :is-edit="isEdit"
                         :current-user="user"
+                        :ticket-id="ticketProps.ticket.id"
                         @followup-deleted="handleFollowupDelete"
                         @followup-updated="handleFollowupUpdate"
                     />
