@@ -147,7 +147,7 @@ library.add(faSort, faSortUp, faSortDown);
                                 icon="fa-solid fa-plus"
                                 class="h-5 w-5 mr-1"
                             />
-                            Add Ticket
+                            New Ticket
                         </button>
                     </Link>
                 </div>
