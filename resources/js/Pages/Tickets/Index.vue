@@ -170,12 +170,11 @@ library.add(faSort, faSortUp, faSortDown);
                     <!-- Информация о записях и выбор количества -->
                     <div class="flex flex-wrap justify-between items-center mb-4">
                         <div class="text-sm text-gray-700">
-                            Показано {{ tickets.from }} - {{ tickets.to }} из
-                            {{ tickets.total }} записей
+                            Showing {{ tickets.from }} - {{ tickets.to }} of {{ tickets.total }} records
                         </div>
                         <div class="flex items-center space-x-2">
                             <label for="per-page" class="text-sm text-gray-600">
-                                Записей на страницу:
+                                Records per page:
                             </label>
                             <select
                                 id="per-page"
