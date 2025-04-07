@@ -1,23 +1,24 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { Link } from "@inertiajs/vue3";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 const props = defineProps({
     ticketId: {
         type: Number,
-        required: true
-    }
+        required: true,
+    },
 });
 
-const emit = defineEmits(['delete']);
+const emit = defineEmits(["delete"]);
 
 const deleteTicket = () => {
-    emit('delete', props.ticketId);
+    emit("delete", props.ticketId);
 };
 </script>
 
 <template>
     <div class="flex space-x-2">
+        <!-- Кнопка просмотра тикета -->
         <Link
             :href="route('ticket.show', ticketId)"
             class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
@@ -28,6 +29,7 @@ const deleteTicket = () => {
                 class="h-4 w-4 opacity-70"
             />
         </Link>
+        <!-- Кнопка редактирования тикета -->
         <Link
             :href="route('ticket.edit', ticketId)"
             class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
@@ -38,6 +40,7 @@ const deleteTicket = () => {
                 class="h-4 w-4 opacity-70"
             />
         </Link>
+        <!-- Кнопка удаления тикета -->
         <button
             @click="deleteTicket"
             class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
@@ -49,4 +52,4 @@ const deleteTicket = () => {
             />
         </button>
     </div>
-</template> 
+</template>
