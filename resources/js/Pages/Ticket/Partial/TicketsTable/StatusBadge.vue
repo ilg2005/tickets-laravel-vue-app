@@ -6,7 +6,7 @@ const props = defineProps({
     }
 });
 
-// Функция для получения класса цвета Tailwind CSS для статуса
+// Функция для получения класса цвета для статуса
 const getStatusColorClass = (status) => {
     switch (status) {
         case "open":

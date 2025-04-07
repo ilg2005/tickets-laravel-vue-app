@@ -6,7 +6,7 @@ const props = defineProps({
     }
 });
 
-// Функция для получения класса цвета Tailwind CSS для приоритета
+// Функция для получения класса цвета для приоритета
 const getPriorityColorClass = (priority) => {
     switch (priority) {
         case "low":
