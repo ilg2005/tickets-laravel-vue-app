@@ -1,4 +1,12 @@
-/* Стили для таблицы и фильтров */
+/* -----------------------------------------------------------------------------
+ * Таблица тикетов - общие стили компонентов 
+ * -----------------------------------------------------------------------------
+ */
+
+/* 
+ * 1. Контейнеры таблицы 
+ * -----------------------------------------------------------------------------
+ */
 .table-outer-container {
     width: 100%;
     max-width: 100%;
@@ -12,7 +20,18 @@
     border-radius: 0.375rem;
 }
 
-/* Скрываем полосу прокрутки только в Firefox */
+.table-container {
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+/*
+ * 2. Настройка скроллбаров
+ * -----------------------------------------------------------------------------
+ */
+/* Firefox скроллбар */
 @-moz-document url-prefix() {
     .table-outer-container {
         scrollbar-width: thin;
@@ -20,7 +39,7 @@
     }
 }
 
-/* Стилизуем полосу прокрутки для Webkit браузеров (Chrome, Safari) */
+/* WebKit скроллбар (Chrome, Safari, Edge) */
 .table-outer-container::-webkit-scrollbar {
     height: 6px;
 }
@@ -35,58 +54,78 @@
     border-radius: 3px;
 }
 
+/*
+ * 3. Сетка таблицы
+ * -----------------------------------------------------------------------------
+ */
 .grid-filter-container {
+    /* Основная структура сетки */
     display: grid;
     grid-template-columns: 5% 10% 12% 33% 12% 12% 10%;
     gap: 0;
     align-items: center;
+    
+    /* Размеры */
     width: 100%;
     box-sizing: border-box;
     min-width: 800px;
 }
 
-/* Если админ не активирован, скрываем колонку user */
+/* Модификация сетки когда админский режим не активен */
 :root:not(.admin-active) .grid-filter-container {
     grid-template-columns: 5% 0% 12% 43% 12% 12% 10%;
 }
 
+/*
+ * 4. Ячейки таблицы
+ * -----------------------------------------------------------------------------
+ */
+/* Ячейка с ID */
 .id-cell {
     grid-column: 1;
     padding: 0.75rem 0.5rem;
 }
+
+/* Ячейка с пользователем */
 .user-cell {
     grid-column: 2;
     padding: 0.75rem 0.5rem;
 }
+
+/* Ячейка с заголовком */
 .title-cell {
     grid-column: 3;
     padding: 0.75rem 0.5rem;
 }
+
+/* Ячейка с описанием */
 .description-cell {
     grid-column: 4;
     padding: 0.75rem 0.5rem;
 }
+
+/* Ячейка со статусом */
 .status-cell {
     grid-column: 5;
     padding: 0.75rem 0.125rem;
 }
+
+/* Ячейка с приоритетом */
 .priority-cell {
     grid-column: 6;
     padding: 0.75rem 0.125rem;
 }
+
+/* Ячейка с действиями */
 .actions-cell {
     grid-column: 7;
     padding: 0.75rem 0.5rem;
 }
 
-.table-container {
-    width: 100%;
-    padding: 0;
-    box-sizing: border-box;
-    min-width: 0;
-}
-
-/* Адаптивные стили */
+/*
+ * 5. Адаптивный дизайн
+ * -----------------------------------------------------------------------------
+ */
 @media (max-width: 768px) {
     .grid {
         grid-template-columns: repeat(1, minmax(0, 1fr));
