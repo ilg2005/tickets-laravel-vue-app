@@ -71,7 +71,7 @@
     min-width: 800px;
 }
 
-/* Модификация сетки когда админский режим не активен */
+/* Модификация сетки когда админ-режим не активен */
 :root:not(.admin-active) .grid-filter-container {
     grid-template-columns: 5% 0% 12% 43% 12% 12% 10%;
 }
