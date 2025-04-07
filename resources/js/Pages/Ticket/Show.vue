@@ -4,19 +4,6 @@ import CreateTicketForm from './Partial/CreateTicketForm.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 
 const { props } = usePage();
-
-// Функция для форматирования даты
-const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-};
-
-// Функция для форматирования размера файла
-const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + ' B';
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
-    else return (bytes / 1048576).toFixed(2) + ' MB';
-};
 </script>
 
 <template>

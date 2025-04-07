@@ -1,8 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import FollowupItem from './FollowupItem.vue';
-import { router, Link } from '@inertiajs/vue3';
-import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps({
     followups: {
@@ -24,8 +22,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['followupDeleted', 'followupUpdated']);
-
-const page = usePage();
 
 const deleteConfirm = (followupId) => {
     if (confirm('Are you sure you want to proceed?')) {

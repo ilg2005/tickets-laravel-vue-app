@@ -104,66 +104,7 @@ const save = () => {
     }
 };
 
-const saveFollowUps = () => {
-    followupForm.post(route('ticket.followups.store'), {
-        onSuccess: (response) => {
-            const message = response.props.flash.success || 'Follow-up added';
-            alert(message);
-            const newFollowup = response.props.ticket.followups[response.props.ticket.followups.length - 1];
-            if (ticketProps.ticket) {
-                ticketProps.ticket.followups.push(newFollowup);
-            }
-            followupForm.reset();
-        },
-        onError: (errors) => {
-            const message = errors[0] || 'Error adding follow-up';
-            alert(message);
-        },
-    });
-};
-
-const editFollowupForm = useForm({
-    content: '',
-    type: 'comment',
-    followup_id: null,
-    ticket_id: ticketProps.ticket?.id || null,
-});
-
 const deleteFollowupForm = useForm({});
-
-const isEditingFollowup = ref(null);
-
-const startEditingFollowup = (followup) => {
-    editFollowupForm.content = followup.content;
-    editFollowupForm.type = followup.type;
-    editFollowupForm.followup_id = followup.id;
-    isEditingFollowup.value = followup.id;
-};
-
-const cancelEditingFollowup = () => {
-    isEditingFollowup.value = null;
-    editFollowupForm.reset();
-    editFollowupForm.clearErrors();
-};
-
-const saveEditedFollowup = () => {
-    editFollowupForm.put(route('ticket.followups.update', editFollowupForm.followup_id), {
-        onSuccess: (response) => {
-            const message = response.props.flash.success || 'Follow-up updated';
-            alert(message);
-            const updatedFollowup = response.props.ticket.followups.find(f => f.id === editFollowupForm.followup_id);
-            const index = ticketProps.ticket.followups.findIndex(f => f.id === updatedFollowup.id);
-            if (index !== -1) {
-                ticketProps.ticket.followups.splice(index, 1, updatedFollowup);
-            }
-            cancelEditingFollowup();
-        },
-        onError: (errors) => {
-            const message = errors[0] || 'Error updating follow-up';
-            alert(message);
-        },
-    });
-};
 
 const formatDate = (timestamp) => {
     if (!timestamp) return '';
@@ -175,25 +116,6 @@ const updatedDate = computed(() => formatDate(ticketProps.ticket?.updated_at));
 
 const goBack = () => {
     router.visit(route('ticket.index'));
-};
-
-const deleteConfirm = (followupId) => {
-    if (confirm('Are you sure you want to proceed?')) {
-        deleteFollowupForm.delete(route("ticket.followups.destroy", { id: followupId }), {
-            preserveScroll: true,
-            onSuccess: () => {
-                alert('Follow-up deleted successfully');
-                const index = ticketProps.ticket.followups.findIndex(f => f.id === followupId);
-                if (index !== -1) {
-                    ticketProps.ticket.followups.splice(index, 1);
-                }
-            },
-            onError: (errors) => {
-                const message = errors[0] || 'Error deleting follow-up';
-                alert(message);
-            },
-        });
-    }
 };
 
 const formatFileSize = (bytes) => {

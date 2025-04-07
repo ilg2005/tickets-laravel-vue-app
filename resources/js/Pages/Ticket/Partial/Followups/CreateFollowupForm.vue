@@ -1,5 +1,5 @@
 <script setup>
-import { useForm, router } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
 import FileUploader from '@/Components/FileUploader.vue';
 
@@ -40,13 +40,6 @@ const handleFileChange = (e) => {
 const resetForm = () => {
     form.reset();
     form.clearErrors();
-};
-
-// Функция для форматирования размера файлов
-const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + ' B';
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
-    else return (bytes / 1048576).toFixed(2) + ' MB';
 };
 </script>
 

@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { useForm, Head, Link, usePage, router } from "@inertiajs/vue3";
+import { Head, Link, usePage, router } from "@inertiajs/vue3";
+import { useForm } from "@inertiajs/vue3";
 import CreateTicketForm from "./Partial/CreateTicketForm.vue";
 import TicketFilter from "./Partial/TicketFilter.vue";
 import { ref, computed } from "vue";
@@ -10,7 +11,6 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
 
 const page = usePage();
-const { flash } = page.props;
 
 const props = defineProps({
     tickets: Object,
