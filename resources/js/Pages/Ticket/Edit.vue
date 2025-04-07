@@ -1,7 +1,7 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import CreateTicketForm from './Partial/CreateTicketForm.vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import CreateTicketForm from "./Partial/CreateTicketForm.vue";
+import { Head, usePage } from "@inertiajs/vue3";
 
 const { props } = usePage();
 </script>
@@ -11,13 +11,21 @@ const { props } = usePage();
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Ticket #{{ props.ticket.id }}</h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                Edit Ticket #{{ props.ticket.id }}
+            </h2>
         </template>
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <CreateTicketForm :ticket="props.ticket" :all-files="props.allFiles" mode="edit" />
+                <div
+                    class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6"
+                >
+                    <CreateTicketForm
+                        :ticket="props.ticket"
+                        :all-files="props.allFiles"
+                        mode="edit"
+                    />
                 </div>
             </div>
         </div>
