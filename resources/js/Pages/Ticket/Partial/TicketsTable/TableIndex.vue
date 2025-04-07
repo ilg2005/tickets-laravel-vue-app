@@ -31,6 +31,7 @@ const deleteTicket = (id) => {
 <template>
     <div class="table-outer-container">
         <div class="table-container">
+            
             <!-- Шапка таблицы -->
             <TableHeader 
                 :sort="sort" 
@@ -70,19 +71,6 @@ const deleteTicket = (id) => {
     padding: 0;
     box-sizing: border-box;
     min-width: 0;
-}
-
-/* Firefox скроллбар */
-@-moz-document url-prefix() {
-    .table-outer-container {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-    }
-}
-
-/* WebKit скроллбар (Chrome, Safari, Edge) */
-.table-outer-container::-webkit-scrollbar {
-    height: 6px;
 }
 
 .table-outer-container::-webkit-scrollbar-track {
