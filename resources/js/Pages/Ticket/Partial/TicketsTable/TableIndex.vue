@@ -1,9 +1,7 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import TableHeader from './Table/TableHeader.vue';
-import TableRow from './Table/TableRow.vue';
-import './Table/TableStyles.css';
+import TableHeader from './TableHeader.vue';
+import TableRow from './TableRow.vue';
+import './TableStyles.css';
 
 const props = defineProps({
     tickets: {

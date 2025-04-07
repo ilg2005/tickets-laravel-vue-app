@@ -3,7 +3,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, Link, router, useForm } from "@inertiajs/vue3";
 import TicketFilter from "./Partial/TicketFilter.vue";
 import RecordsInfo from "./Partial/RecordsInfo.vue";
-import TicketsTable from "./Partial/TicketsTable.vue";
+import TableIndex from "./Partial/TicketsTable/TableIndex.vue";
 import { ref } from "vue";
 import { usePermission } from "@/Composables/permissions.js";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -88,7 +88,7 @@ const { hasRole } = usePermission();
 const isUser = hasRole("user");
 
 // Добавляю иконки в библиотеку
-library.add(faSort, faSortUp, faSortDown, faPlus);
+library.add(faSort, faSortUp, faSortDown, faPlus, faEye, faPenToSquare, faTrashCan);
 </script>
 
 <template>
@@ -141,7 +141,7 @@ library.add(faSort, faSortUp, faSortDown, faPlus);
                     />
 
                     <!-- Таблица тикетов -->
-                    <TicketsTable 
+                    <TableIndex 
                         :tickets="tickets"
                         :sort="sort"
                         :is-admin="isAdmin"
