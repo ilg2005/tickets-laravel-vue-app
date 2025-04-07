@@ -17,7 +17,7 @@ const props = defineProps({
         default: null
     },
     perPage: {
-        type: Number,
+        type: [Number, String],
         required: true
     }
 });
@@ -26,7 +26,7 @@ const props = defineProps({
 const getModifiedUrl = (url) => {
     if (!url) return null;
     const urlObj = new URL(url);
-    urlObj.searchParams.set("per_page", props.perPage);
+    urlObj.searchParams.set("per_page", Number(props.perPage));
     return urlObj.href;
 };
 </script>

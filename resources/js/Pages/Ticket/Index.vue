@@ -1,7 +1,8 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link, usePage, router, useForm } from "@inertiajs/vue3";
+import { Head, Link, router, useForm } from "@inertiajs/vue3";
 import TicketFilter from "./Partial/TicketFilter.vue";
+import RecordsInfo from "./Partial/RecordsInfo.vue";
 import { ref } from "vue";
 import { usePermission } from "@/Composables/permissions.js";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -31,7 +32,7 @@ const form = useForm({
 
 const filters = ref(props.filters || {});
 const sort = ref(props.sort || { field: "updated_at", order: "desc" });
-const perPage = ref(15);
+const perPage = ref(Number(15));
 
 const handleFilterChange = (newFilters) => {
     filters.value = newFilters;
@@ -58,7 +59,7 @@ const applyFilters = () => {
         {
             filters: filters.value,
             sort: sort.value,
-            per_page: perPage.value,
+            per_page: Number(perPage.value),
         },
         {
             preserveState: true,
@@ -68,7 +69,8 @@ const applyFilters = () => {
     );
 };
 
-const changePerPage = () => {
+const handlePerPageChange = (newPerPage) => {
+    perPage.value = Number(newPerPage);
     applyFilters();
 };
 
@@ -157,28 +159,13 @@ library.add(faSort, faSortUp, faSortDown);
                     />
 
                     <!-- Информация о записях и выбор количества -->
-                    <div class="flex flex-wrap justify-between items-center mb-4">
-                        <div class="text-sm text-gray-700">
-                            Showing {{ tickets.from }} - {{ tickets.to }} of {{ tickets.total }} records
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <label for="per-page" class="text-sm text-gray-600">
-                                Records per page:
-                            </label>
-                            <select
-                                id="per-page"
-                                v-model="perPage"
-                                @change="changePerPage"
-                                class="text-sm border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                            >
-                                <option value="10">10</option>
-                                <option value="15">15</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                        </div>
-                    </div>
+                    <RecordsInfo
+                        :from="tickets.from"
+                        :to="tickets.to"
+                        :total="tickets.total"
+                        :per-page="perPage"
+                        @per-page-change="handlePerPageChange"
+                    />
 
                     <!-- Таблица в контейнере с прокруткой -->
                     <div class="table-outer-container">
