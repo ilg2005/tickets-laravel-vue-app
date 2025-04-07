@@ -3,11 +3,12 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, Link, router, useForm } from "@inertiajs/vue3";
 import TicketFilter from "./Partial/TicketFilter.vue";
 import RecordsInfo from "./Partial/RecordsInfo.vue";
+import TicketsTable from "./Partial/TicketsTable.vue";
 import { ref } from "vue";
 import { usePermission } from "@/Composables/permissions.js";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faSortUp, faSortDown, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Pagination from "@/Components/Pagination.vue";
 
 const props = defineProps({
@@ -86,36 +87,8 @@ const deleteConfirm = (id) => {
 const { hasRole } = usePermission();
 const isUser = hasRole("user");
 
-// Function to get the Tailwind CSS color class for the priority
-const getPriorityColorClass = (priority) => {
-    switch (priority) {
-        case "low":
-            return "bg-green-500";
-        case "medium":
-            return "bg-yellow-500";
-        case "high":
-            return "bg-red-500";
-        default:
-            return "bg-gray-500";
-    }
-};
-
-// Function to get the Tailwind CSS color class for the status
-const getStatusColorClass = (status) => {
-    switch (status) {
-        case "open":
-            return "text-green-600 bg-green-100 px-2 py-1 rounded";
-        case "in_progress":
-            return "text-blue-600 bg-blue-100 px-2 py-1 rounded";
-        case "closed":
-            return "text-red-600 bg-red-100 px-2 py-1 rounded";
-        default:
-            return "text-gray-600 bg-gray-100 px-2 py-1 rounded";
-    }
-};
-
-// Добавляю иконки сортировки в библиотеку
-library.add(faSort, faSortUp, faSortDown);
+// Добавляю иконки в библиотеку
+library.add(faSort, faSortUp, faSortDown, faPlus);
 </script>
 
 <template>
@@ -167,176 +140,14 @@ library.add(faSort, faSortUp, faSortDown);
                         @per-page-change="handlePerPageChange"
                     />
 
-                    <!-- Таблица в контейнере с прокруткой -->
-                    <div class="table-outer-container">
-                        <div class="table-container">
-                            <div
-                                class="grid grid-filter-container text-xs font-bold text-gray-600 uppercase tracking-wider bg-gray-100"
-                            >
-                                <div
-                                    @click="onSort('id')"
-                                    class="id-cell cursor-pointer flex items-center"
-                                >
-                                    #
-                                    <span class="ml-1">
-                                        <font-awesome-icon
-                                            v-if="sort.field === 'id'"
-                                            :icon="sort.order === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'"
-                                            class="h-3 w-3"
-                                        />
-                                        <font-awesome-icon
-                                            v-else
-                                            icon="fa-solid fa-sort"
-                                            class="h-3 w-3 text-gray-400"
-                                        />
-                                    </span>
-                                </div>
-                                <div
-                                    v-if="isAdmin"
-                                    @click="onSort('user_name')"
-                                    class="user-cell cursor-pointer flex items-center"
-                                >
-                                    User
-                                    <span class="ml-1">
-                                        <font-awesome-icon
-                                            v-if="sort.field === 'user_name'"
-                                            :icon="sort.order === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'"
-                                            class="h-3 w-3"
-                                        />
-                                        <font-awesome-icon
-                                            v-else
-                                            icon="fa-solid fa-sort"
-                                            class="h-3 w-3 text-gray-400"
-                                        />
-                                    </span>
-                                </div>
-                                <div
-                                    @click="onSort('title')"
-                                    class="title-cell cursor-pointer flex items-center"
-                                >
-                                    Title
-                                    <span class="ml-1">
-                                        <font-awesome-icon
-                                            v-if="sort.field === 'title'"
-                                            :icon="sort.order === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'"
-                                            class="h-3 w-3"
-                                        />
-                                        <font-awesome-icon
-                                            v-else
-                                            icon="fa-solid fa-sort"
-                                            class="h-3 w-3 text-gray-400"
-                                        />
-                                    </span>
-                                </div>
-                                <div class="description-cell">
-                                    Description
-                                </div>
-                                <div
-                                    @click="onSort('status')"
-                                    class="status-cell cursor-pointer flex items-center"
-                                >
-                                    Status
-                                    <span class="ml-1">
-                                        <font-awesome-icon
-                                            v-if="sort.field === 'status'"
-                                            :icon="sort.order === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'"
-                                            class="h-3 w-3"
-                                        />
-                                        <font-awesome-icon
-                                            v-else
-                                            icon="fa-solid fa-sort"
-                                            class="h-3 w-3 text-gray-400"
-                                        />
-                                    </span>
-                                </div>
-                                <div
-                                    @click="onSort('priority')"
-                                    class="priority-cell cursor-pointer flex items-center"
-                                >
-                                    Priority
-                                    <span class="ml-1">
-                                        <font-awesome-icon
-                                            v-if="sort.field === 'priority'"
-                                            :icon="sort.order === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down'"
-                                            class="h-3 w-3"
-                                        />
-                                        <font-awesome-icon
-                                            v-else
-                                            icon="fa-solid fa-sort"
-                                            class="h-3 w-3 text-gray-400"
-                                        />
-                                    </span>
-                                </div>
-                                <div class="actions-cell text-center">Actions</div>
-                            </div>
-                            <div
-                                v-for="(ticket, index) in tickets.data"
-                                :key="ticket.id"
-                                class="grid grid-filter-container text-sm text-gray-500 hover:bg-gray-100 transition-colors duration-150"
-                                :class="{ 'bg-gray-50': index % 2 !== 0 }"
-                            >
-                                <div class="id-cell">{{ ticket.id }}</div>
-                                <div v-if="isAdmin" class="user-cell">
-                                    {{ ticket.user ? ticket.user.name : "-" }}
-                                </div>
-                                <div class="title-cell">
-                                    {{ ticket.title }}
-                                </div>
-                                <div class="description-cell">
-                                    {{ ticket.description }}
-                                </div>
-                                <div class="status-cell flex items-center">
-                                    <span
-                                        :class="getStatusColorClass(ticket.status)"
-                                    >
-                                        {{ ticket.status.replace('_', ' ') }}
-                                    </span>
-                                </div>
-                                <div class="priority-cell flex items-center">
-                                    <div class="flex items-center">
-                                        <span 
-                                            :class="[getPriorityColorClass(ticket.priority), 'inline-block w-3 h-3 rounded-full mr-2']"
-                                        ></span>
-                                        <span class="text-gray-700">{{ ticket.priority }}</span>
-                                    </div>
-                                </div>
-                                <div class="actions-cell">
-                                    <div class="flex space-x-2">
-                                        <Link
-                                            :href="route('ticket.show', ticket.id)"
-                                            class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
-                                            title="View"
-                                        >
-                                            <font-awesome-icon
-                                                icon="fa-solid fa-eye"
-                                                class="h-4 w-4 opacity-70"
-                                            />
-                                        </Link>
-                                        <Link
-                                            :href="route('ticket.edit', ticket.id)"
-                                            class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
-                                            title="Edit"
-                                        >
-                                            <font-awesome-icon
-                                                icon="fa-solid fa-pen-to-square"
-                                                class="h-4 w-4 opacity-70"
-                                            />
-                                        </Link>
-                                        <button
-                                            @click="() => deleteConfirm(ticket.id)"
-                                            class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
-                                            title="Delete"
-                                        >
-                                            <font-awesome-icon
-                                                icon="fa-solid fa-trash-can"
-                                                class="h-4 w-4 opacity-70"
-                                            />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Таблица тикетов -->
+                    <TicketsTable 
+                        :tickets="tickets"
+                        :sort="sort"
+                        :is-admin="isAdmin"
+                        @sort="onSort"
+                        @delete="deleteConfirm"
+                    />
 
                     <!-- Отступ между таблицей и пагинацией -->
                     <div class="my-6"></div>
