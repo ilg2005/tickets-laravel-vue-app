@@ -1,7 +1,6 @@
 <script setup>
 import TableHeader from './TableHeader.vue';
 import TableRow from './TableRow.vue';
-import './TableStyles.css';
 
 const props = defineProps({
     tickets: {
@@ -50,4 +49,49 @@ const deleteTicket = (id) => {
             />
         </div>
     </div>
-</template> 
+</template>
+
+<style scoped>
+.table-outer-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    margin-bottom: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+}
+
+.table-container {
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+/* Firefox скроллбар */
+@-moz-document url-prefix() {
+    .table-outer-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+    }
+}
+
+/* WebKit скроллбар (Chrome, Safari, Edge) */
+.table-outer-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-outer-container::-webkit-scrollbar-track {
+    background-color: #f9fafb;
+    border-radius: 3px;
+}
+
+.table-outer-container::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+}
+</style> 

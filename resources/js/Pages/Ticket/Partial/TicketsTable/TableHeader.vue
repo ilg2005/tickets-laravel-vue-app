@@ -1,6 +1,6 @@
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import './TableStyles.css';
+
 
 const props = defineProps({
     sort: {
@@ -120,4 +120,66 @@ const onSort = (field) => {
         </div>
         <div class="actions-cell text-center">Actions</div>
     </div>
-</template> 
+</template>
+
+<style scoped>
+.grid-filter-container {
+    /* Основная структура сетки */
+    display: grid;
+    grid-template-columns: 5% 10% 12% 33% 12% 12% 10%;
+    gap: 0;
+    align-items: center;
+    
+    /* Размеры */
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 800px;
+}
+
+/* Модификация сетки когда админ-режим не активен */
+:root:not(.admin-active) .grid-filter-container {
+    grid-template-columns: 5% 0% 12% 43% 12% 12% 10%;
+}
+
+/* Ячейки таблицы */
+.id-cell {
+    grid-column: 1;
+    padding: 0.75rem 0.5rem;
+}
+
+.user-cell {
+    grid-column: 2;
+    padding: 0.75rem 0.5rem;
+}
+
+.title-cell {
+    grid-column: 3;
+    padding: 0.75rem 0.5rem;
+}
+
+.description-cell {
+    grid-column: 4;
+    padding: 0.75rem 0.5rem;
+}
+
+.status-cell {
+    grid-column: 5;
+    padding: 0.75rem 0.125rem;
+}
+
+.priority-cell {
+    grid-column: 6;
+    padding: 0.75rem 0.125rem;
+}
+
+.actions-cell {
+    grid-column: 7;
+    padding: 0.75rem 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+</style> 
