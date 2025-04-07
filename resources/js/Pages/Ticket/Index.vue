@@ -8,7 +8,7 @@ import { ref } from "vue";
 import { usePermission } from "@/Composables/permissions.js";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faSort, faSortUp, faSortDown, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faSort, faSortUp, faSortDown, faPlus, faEye, faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import Pagination from "@/Components/Pagination.vue";
 
 const props = defineProps({
