@@ -7,6 +7,7 @@ import { usePermission } from "@/Composables/permissions.js";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faSort, faSortUp, faSortDown } from '@fortawesome/free-solid-svg-icons';
+import Pagination from "@/Components/Pagination.vue";
 
 const props = defineProps({
     tickets: Object,
@@ -109,14 +110,6 @@ const getStatusColorClass = (status) => {
         default:
             return "text-gray-600 bg-gray-100 px-2 py-1 rounded";
     }
-};
-
-// Функция для модификации URL пагинации, добавляя параметр per_page
-const getModifiedUrl = (url) => {
-    if (!url) return null;
-    const urlObj = new URL(url);
-    urlObj.searchParams.set("per_page", perPage.value);
-    return urlObj.href;
 };
 
 // Добавляю иконки сортировки в библиотеку
@@ -362,82 +355,12 @@ library.add(faSort, faSortUp, faSortDown);
                     <div class="my-6"></div>
 
                     <!-- Pagination -->
-                    <div
-                        class="pagination-container px-4 py-3 flex justify-center"
-                    >
-                        <nav class="flex rounded-md" aria-label="Pagination">
-                            <!-- Previous Page -->
-                            <Link
-                                v-if="tickets.prev_page_url"
-                                :href="getModifiedUrl(tickets.prev_page_url)"
-                                class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50"
-                            >
-                                <font-awesome-icon
-                                    class="h-5 w-5"
-                                    icon="fa-solid fa-chevron-left"
-                                />
-                                <span class="sr-only">Предыдущая</span>
-                            </Link>
-                            <span
-                                v-else
-                                class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-300 bg-white border border-gray-300 cursor-not-allowed"
-                            >
-                                <font-awesome-icon
-                                    class="h-5 w-5"
-                                    icon="fa-solid fa-chevron-left"
-                                />
-                                <span class="sr-only">Предыдущая</span>
-                            </span>
-
-                            <!-- Page Links -->
-                            <template
-                                v-for="link in tickets.links.slice(1, -1)"
-                                :key="link.label"
-                            >
-                                <Link
-                                    v-if="link.url"
-                                    :href="getModifiedUrl(link.url)"
-                                    :class="[
-                                        link.active
-                                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
-                                        'relative inline-flex items-center px-4 py-2 text-sm font-medium border',
-                                    ]"
-                                >
-                                    {{ link.label }}
-                                </Link>
-                                <span
-                                    v-else
-                                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
-                                >
-                                    ...
-                                </span>
-                            </template>
-
-                            <!-- Next Page -->
-                            <Link
-                                v-if="tickets.next_page_url"
-                                :href="getModifiedUrl(tickets.next_page_url)"
-                                class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50"
-                            >
-                                <span class="sr-only">Следующая</span>
-                                <font-awesome-icon
-                                    class="h-5 w-5"
-                                    icon="fa-solid fa-chevron-right"
-                                />
-                            </Link>
-                            <span
-                                v-else
-                                class="relative inline-flex items-center px-3 py-2 text-sm font-medium text-gray-300 bg-white border border-gray-300 cursor-not-allowed"
-                            >
-                                <span class="sr-only">Следующая</span>
-                                <font-awesome-icon
-                                    class="h-5 w-5"
-                                    icon="fa-solid fa-chevron-right"
-                                />
-                            </span>
-                        </nav>
-                    </div>
+                    <Pagination 
+                        :links="tickets.links"
+                        :prev-page-url="tickets.prev_page_url"
+                        :next-page-url="tickets.next_page_url"
+                        :per-page="perPage"
+                    />
                 </div>
             </div>
         </div>
@@ -538,14 +461,5 @@ library.add(faSort, faSortUp, faSortDown);
     padding: 0;
     box-sizing: border-box;
     min-width: 0;
-}
-
-.pagination-container {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    border-top: 1px solid #e5e7eb;
 }
 </style>
