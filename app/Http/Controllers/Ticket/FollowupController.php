@@ -6,6 +6,7 @@ use App\Models\Ticket\Followup;
 use App\Models\User;
 use App\Notifications\Ticket\NewFollowupNotification;
 use App\Services\Ticket\FileService;
+use App\Constants\Permissions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -14,6 +15,7 @@ use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
+
 class FollowupController extends Controller
 {
     /**
@@ -35,32 +37,29 @@ class FollowupController extends Controller
 
     public function store(Request $request)
     {
+        // Проверка базового разрешения на создание followup
         Gate::authorize('create', Followup::class);
 
-        if ($request->type === 'solution') {
-            if (!Gate::allows('createSolution', Followup::class)) {
-                return back()->withErrors(['Unauthorized to create solution follow-ups.']);
-            }
+        // Проверка разрешения в зависимости от типа followup
+        if ($request->type === Permissions::FOLLOWUP_TYPE_SOLUTION) {
+            Gate::authorize('createSolution', Followup::class);
 
+            // Проверка на существование solution для данного тикета
             $existingSolution = Followup::where('ticket_id', $request->ticket_id)
-                                        ->where('type', 'solution')
+                                        ->where('type', Permissions::FOLLOWUP_TYPE_SOLUTION)
                                         ->first();
 
             if ($existingSolution) {
                 return back()->withErrors(['A solution follow-up already exists for this ticket.']);
             }
-        }
-
-        if ($request->type === 'comment') {
-            if (!Gate::allows('createComment', Followup::class)) {
-                return redirect()->back()->with('error', 'Unauthorized to create comment follow-ups.');
-            }
+        } elseif ($request->type === Permissions::FOLLOWUP_TYPE_COMMENT) {
+            Gate::authorize('createComment', Followup::class);
         }
 
         // Валидируем основные поля (без файлов)
         $request->validate([
             'content' => 'required|string',
-            'type' => 'required|string|in:comment,solution',
+            'type' => 'required|string|in:' . Permissions::FOLLOWUP_TYPE_COMMENT . ',' . Permissions::FOLLOWUP_TYPE_SOLUTION,
             'ticket_id' => 'required|exists:tickets,id',
         ]);
 
@@ -89,7 +88,7 @@ class FollowupController extends Controller
             }
 
             $admins = User::whereHas('roles', function ($query) {
-                $query->where('name', 'admin');
+                $query->where('name', Permissions::ROLE_ADMIN);
             })->where('id', '!=', $followupCreator->id)->get();
 
             if ($admins->isNotEmpty()) {
@@ -104,9 +103,7 @@ class FollowupController extends Controller
 
     public function update(Request $request, Followup $followup)
     {
-        if (!Gate::allows('update', $followup)) {
-            return back()->withErrors(['Unauthorized to update follow-up.']);
-        }
+        Gate::authorize('update', $followup);
 
         $request->validate([
             'content' => 'required|string',
@@ -121,9 +118,7 @@ class FollowupController extends Controller
 
     public function destroy(Followup $followup)
     {
-        if (!Gate::allows('delete', $followup)) {
-            return back()->withErrors(['Unauthorized to delete follow-up.']);
-        }
+        Gate::authorize('delete', $followup);
 
         $followup->delete();
 

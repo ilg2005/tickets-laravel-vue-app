@@ -13,8 +13,7 @@ class TicketPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Администраторы могут видеть все тикеты
-        return $user->hasRole(Permissions::ROLE_ADMIN);
+        return $user->can(Permissions::VIEW_ANY_TICKETS);
     }
 
     /**
@@ -22,8 +21,8 @@ class TicketPolicy
      */
     public function view(User $user, Ticket $ticket): bool
     {
-        // Администраторы или владельцы тикета могут просматривать
-        return $user->hasRole(Permissions::ROLE_ADMIN) || $user->id === $ticket->user_id;
+        return $user->can(Permissions::VIEW_TICKETS) && 
+               ($user->can(Permissions::VIEW_ANY_TICKETS) || $user->id === $ticket->user_id);
     }
 
     /**
@@ -31,8 +30,7 @@ class TicketPolicy
      */
     public function create(User $user): bool
     {
-        // Только пользователи (не администраторы) могут создавать тикеты
-        return !$user->hasRole(Permissions::ROLE_ADMIN) && $user->hasRole(Permissions::ROLE_USER);
+        return $user->can(Permissions::CREATE_TICKETS);
     }
 
     /**
@@ -40,8 +38,8 @@ class TicketPolicy
      */
     public function update(User $user, Ticket $ticket): bool
     {
-        // Администраторы или владельцы тикета могут обновлять
-        return $user->hasRole(Permissions::ROLE_ADMIN) || $user->id === $ticket->user_id;
+        return $user->can(Permissions::UPDATE_TICKETS) && 
+               ($user->can(Permissions::VIEW_ANY_TICKETS) || $user->id === $ticket->user_id);
     }
 
     /**
@@ -49,8 +47,8 @@ class TicketPolicy
      */
     public function delete(User $user, Ticket $ticket): bool
     {
-        // Администраторы или владельцы тикета могут удалять
-        return $user->hasRole(Permissions::ROLE_ADMIN) || $user->id === $ticket->user_id;
+        return $user->can(Permissions::DELETE_TICKETS) && 
+               ($user->can(Permissions::VIEW_ANY_TICKETS) || $user->id === $ticket->user_id);
     }
 
     /**
