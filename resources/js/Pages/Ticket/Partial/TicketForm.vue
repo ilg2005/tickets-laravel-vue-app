@@ -171,7 +171,7 @@ const reset = () => {
                 :is-read-only="isShow"
             />
         </div>
-        <div class="mb-4 text-sm text-gray-500">
+        <div v-else class="mb-4 text-sm text-gray-500">
             No attached files.
         </div>
 
