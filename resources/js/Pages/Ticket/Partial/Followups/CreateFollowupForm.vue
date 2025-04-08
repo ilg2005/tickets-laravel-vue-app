@@ -100,24 +100,23 @@ const resetForm = () => {
                         @file-change="(e) => handleFileChange(e, form)"
                     />
                 </div>
-
-                <!-- Button Container -->
-                <div class="flex justify-center gap-2 button-container">
-                    <button
-                        type="button"
-                        @click="resetForm"
-                        class="inline-flex items-center justify-center h-8 px-3 py-1.5 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        class="inline-flex items-center justify-center h-8 px-3 py-1.5 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 whitespace-nowrap"
-                    >
-                        Add Follow-up
-                    </button>
-                </div>
             </div>
+        </div>
+        <!-- Button Container -->
+        <div class="flex justify-center gap-2 button-container">
+            <button
+                type="button"
+                @click="resetForm"
+                class="inline-flex items-center justify-center h-8 px-3 py-1.5 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
+            >
+                Cancel
+            </button>
+            <button
+                type="submit"
+                class="inline-flex items-center justify-center h-8 px-3 py-1.5 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 whitespace-nowrap"
+            >
+                Add Follow-up
+            </button>
         </div>
     </form>
 </template>

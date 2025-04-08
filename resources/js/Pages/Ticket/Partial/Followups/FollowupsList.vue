@@ -36,7 +36,7 @@ const deleteConfirm = (followupId) => {
 
 <template>
     <div>        
-        <div class="overflow-auto" style="max-height: 400px;">
+        <div class="overflow-auto" >
             <template v-if="followups && followups.length > 0">
                 <FollowupItem
                     v-for="followup in followups"
