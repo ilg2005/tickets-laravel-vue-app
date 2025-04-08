@@ -4,6 +4,7 @@ import { useForm } from "@inertiajs/vue3";
 import InputError from "@/Components/InputError.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { useNotification } from "@/Composables/useNotification";
+import { usePermissionCheck } from "@/Composables/usePermissionCheck.js";
 
 const props = defineProps({
     followup: {
@@ -22,6 +23,7 @@ const props = defineProps({
 
 const emit = defineEmits(["delete", "update"]);
 const { error } = useNotification();
+const { hasRole, ROLES } = usePermissionCheck();
 
 const isEditing = ref(false);
 const editForm = useForm({
@@ -106,10 +108,7 @@ const submitForm = () => {
                     </button>
                     <!-- Delete button -->
                     <button
-                        v-if="
-                            currentUser.is_admin ||
-                            followup.user_id === currentUser.id
-                        "
+                        v-if="hasRole(ROLES.ADMIN) || followup.user_id === currentUser.id"
                         class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-150 rounded-md hover:bg-gray-100"
                         @click="$emit('delete', followup.id)"
                         title="Delete"
