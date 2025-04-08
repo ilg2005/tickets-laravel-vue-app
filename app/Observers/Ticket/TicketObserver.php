@@ -5,7 +5,7 @@ namespace App\Observers\Ticket;
 use App\Models\Ticket\Ticket;
 use App\Models\User;
 use App\Notifications\Ticket\NewTicketNotification;
-use App\Notifications\Ticket\TicketStatusUpdatedNotification;
+use App\Notifications\Ticket\TicketUpdatedNotification;
 use App\Services\Ticket\FileService;
 use Illuminate\Support\Facades\Notification;
 
@@ -52,9 +52,50 @@ class TicketObserver
      */
     public function updated(Ticket $ticket): void
     {
-        if ($ticket->isDirty('status')) {
-            $oldStatus = $ticket->getOriginal('status');
-            $ticket->user->notify(new TicketStatusUpdatedNotification($ticket, $oldStatus));
+        // Проверяем, были ли изменения
+        if ($ticket->wasChanged()) {
+            // Сбор измененных полей и их значений
+            $changedFields = [];
+            
+            if ($ticket->wasChanged('status')) {
+                $changedFields['status'] = [
+                    'old' => $ticket->getOriginal('status'),
+                    'new' => $ticket->status
+                ];
+            }
+            
+            if ($ticket->wasChanged('title')) {
+                $changedFields['title'] = [
+                    'old' => $ticket->getOriginal('title'),
+                    'new' => $ticket->title
+                ];
+            }
+            
+            if ($ticket->wasChanged('description')) {
+                $changedFields['description'] = [
+                    'old' => $ticket->getOriginal('description'),
+                    'new' => $ticket->description
+                ];
+            }
+            
+            if ($ticket->wasChanged('priority')) {
+                $changedFields['priority'] = [
+                    'old' => $ticket->getOriginal('priority'),
+                    'new' => $ticket->priority
+                ];
+            }
+            
+            // Отправляем уведомление пользователю
+            $ticket->user->notify(new TicketUpdatedNotification($ticket, $changedFields));
+            
+            // Отправляем уведомление администраторам
+            $admins = User::whereHas('roles', function ($query) {
+                $query->where('name', 'admin');
+            })->where('id', '!=', $ticket->user_id)->get();
+            
+            if ($admins->isNotEmpty()) {
+                Notification::send($admins, new TicketUpdatedNotification($ticket, $changedFields));
+            }
         }
     }
 
