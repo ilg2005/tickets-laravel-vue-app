@@ -1,7 +1,7 @@
 <script setup>
 import { router, usePage, useForm } from '@inertiajs/vue3';
 import { watch } from 'vue';
-import { usePermission } from '@/Composables/permissions.js';
+import { usePermissionCheck } from '@/Composables/usePermissionCheck.js';
 import { useTicketFiles } from '@/Composables/useTicketFiles';
 import { useNotification } from '@/Composables/useNotification';
 import FollowupsList from '../Partial/Followups/FollowupsList.vue';
@@ -12,9 +12,9 @@ const { props } = usePage();
 const user = props.auth.user;
 const { success, confirm, error } = useNotification();
 
-const { hasPermission } = usePermission();
+const { hasPermission, PERMISSIONS } = usePermissionCheck();
 
-const canCreateSolutionFollowups = hasPermission('create solution followups');
+const canCreateSolutionFollowups = hasPermission(PERMISSIONS.CREATE_SOLUTION_FOLLOWUPS);
 
 const ticketProps = defineProps({
     ticket: {

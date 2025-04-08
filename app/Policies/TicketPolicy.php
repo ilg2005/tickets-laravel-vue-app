@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Ticket\Ticket;
 use App\Models\User;
+use App\Constants\Permissions;
 
 class TicketPolicy
 {
@@ -12,7 +13,8 @@ class TicketPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('admin'); // Admin can view all tickets
+        // Администраторы могут видеть все тикеты
+        return $user->hasRole(Permissions::ROLE_ADMIN);
     }
 
     /**
@@ -20,7 +22,8 @@ class TicketPolicy
      */
     public function view(User $user, Ticket $ticket): bool
     {
-        return $user->hasRole('admin') || $user->id === $ticket->user_id; // Admin or ticket owner can view
+        // Администраторы или владельцы тикета могут просматривать
+        return $user->hasRole(Permissions::ROLE_ADMIN) || $user->id === $ticket->user_id;
     }
 
     /**
@@ -28,8 +31,8 @@ class TicketPolicy
      */
     public function create(User $user): bool
     {
-        // return $user->hasRole('user'); // Only users can create tickets
-        return !$user->hasRole('admin') && $user->hasRole('user'); // Only users who are not admins can create tickets
+        // Только пользователи (не администраторы) могут создавать тикеты
+        return !$user->hasRole(Permissions::ROLE_ADMIN) && $user->hasRole(Permissions::ROLE_USER);
     }
 
     /**
@@ -37,7 +40,8 @@ class TicketPolicy
      */
     public function update(User $user, Ticket $ticket): bool
     {
-        return $user->hasRole('admin') || $user->id === $ticket->user_id; // Admin or ticket owner can update
+        // Администраторы или владельцы тикета могут обновлять
+        return $user->hasRole(Permissions::ROLE_ADMIN) || $user->id === $ticket->user_id;
     }
 
     /**
@@ -45,7 +49,8 @@ class TicketPolicy
      */
     public function delete(User $user, Ticket $ticket): bool
     {
-        return $user->hasRole('admin') || $user->id === $ticket->user_id; // Admin or ticket owner can delete
+        // Администраторы или владельцы тикета могут удалять
+        return $user->hasRole(Permissions::ROLE_ADMIN) || $user->id === $ticket->user_id;
     }
 
     /**

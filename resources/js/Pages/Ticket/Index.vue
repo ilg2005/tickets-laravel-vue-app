@@ -5,7 +5,7 @@ import TicketFilter from "./Partial/TicketFilter.vue";
 import RecordsInfo from "./Partial/RecordsInfo.vue";
 import TableIndex from "./Partial/TicketsTable/TableIndex.vue";
 import { ref } from "vue";
-import { usePermission } from "@/Composables/permissions.js";
+import { usePermissionCheck } from "@/Composables/usePermissionCheck.js";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import Pagination from "@/Components/Pagination.vue";
 
@@ -82,8 +82,8 @@ const deleteConfirm = (id) => {
     }
 };
 
-const { hasRole } = usePermission();
-const isUser = hasRole("user");
+const { hasRole, ROLES } = usePermissionCheck();
+const isUser = hasRole(ROLES.USER);
 </script>
 
 <template>

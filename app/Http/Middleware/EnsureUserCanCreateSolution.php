@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
+use App\Constants\Permissions;
 
 class EnsureUserCanCreateSolution
 {
@@ -17,9 +18,8 @@ class EnsureUserCanCreateSolution
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->type === 'solution' && !Auth::user()->can('create solution followups')) {
-
-            return Inertia::render('Error', ['message' => 'Unauthorized.'], 403);
+        if ($request->type === 'solution' && !Auth::user()->can(Permissions::CREATE_SOLUTION_FOLLOWUPS)) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
         return $next($request);

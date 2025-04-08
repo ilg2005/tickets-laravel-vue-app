@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Constants\Permissions;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -17,50 +18,20 @@ class RolesAndPermissionsSeeder extends Seeder
         // Truncate the roles table
         // DB::table('roles')->truncate();
 
-         // Define Roles
-         $roles = [
-            'admin',
-            'user'
-        ];
-
-        // Define Permissions
-        $permissions = [
-            'view followups',
-            'create followups',
-            'create comment followups',
-            'create solution followups',
-            'update followups',
-            'delete followups'
-        ];
-
-        // Create Roles if they don't exist
-        foreach ($roles as $roleName) {
-            Role::firstOrCreate(['name' => $roleName]);
+        // Создаем роли
+        $adminRole = Role::firstOrCreate(['name' => Permissions::ROLE_ADMIN]);
+        $userRole = Role::firstOrCreate(['name' => Permissions::ROLE_USER]);
+        
+        // Создаем разрешения
+        foreach (Permissions::all() as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
         }
-
-        // Create Permissions if they don't exist
-        foreach ($permissions as $permissionName) {
-            Permission::firstOrCreate(['name' => $permissionName]);
-        }
-
-        // Assign Permissions to Roles
-        $adminRole = Role::where('name', 'admin')->first();
-        $userRole = Role::where('name', 'user')->first();
-
-        // Verify if admin role has the 'create solution followups' permission
-        $adminPermissions = $adminRole->permissions->pluck('name')->toArray();
-        if (!in_array('create solution followups', $adminPermissions)) {
-            // Add the permission explicitly if it's missing
-            $adminRole->givePermissionTo('create solution followups');
-        }
-
-        $adminRole->syncPermissions($permissions);
-        $userRole->syncPermissions([
-            'view followups',
-            'create followups',
-            'create comment followups',
-            'update followups',
-            'delete followups'
-        ]);
+        
+        // Назначаем разрешения ролям
+        $adminRole->syncPermissions(Permissions::adminPermissions());
+        $userRole->syncPermissions(Permissions::userPermissions());
+        
+        // Очистка кэша разрешений
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }
