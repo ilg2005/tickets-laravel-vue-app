@@ -42,24 +42,24 @@ class NewFollowupNotification extends Notification implements ShouldQueue
         $creator = $this->followup->user;
         $url = url('/tickets/' . $ticket->id);
 
-        $line = $creator->name . ' добавил ' . ($this->followup->type === 'solution' ? 'решение' : 'комментарий') . ' к тикету №' . $ticket->id . ':';
+        $line = $creator->name . ' added ' . ($this->followup->type === 'solution' ? 'a solution' : 'a comment') . ' to ticket #' . $ticket->id . ':';
 
         $message = (new MailMessage)
-                    ->subject('Новый ответ в тикете: ' . $ticket->title)
-                    ->greeting('Здравствуйте, ' . $notifiable->name . '!')
+                    ->subject('New Reply in Ticket: ' . $ticket->title)
+                    ->greeting('Hello, ' . $notifiable->name . '!')
                     ->line($line)
                     ->line('> ' . nl2br(e($this->followup->content)));
                     
         // Добавляем информацию о файлах, если они есть
         if ($this->followup->files->count() > 0) {
-            $message->line('К ответу прикреплены файлы:');
+            $message->line('Files attached to the reply:');
             foreach ($this->followup->files as $file) {
                 $message->line('- ' . $file->original_filename . ' (' . round($file->size / 1024, 2) . ' KB)');
             }
         }
 
-        return $message->action('Просмотреть тикет', $url)
-                       ->line('Спасибо за использование нашей системы!');
+        return $message->action('View Ticket', $url)
+                       ->line('Thank you for using our application!');
     }
 
     /**

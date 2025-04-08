@@ -41,22 +41,22 @@ class NewTicketNotification extends Notification implements ShouldQueue
         $url = url('/tickets/' . $this->ticket->id);
 
         $message = (new MailMessage)
-                    ->subject('Новый тикет создан: ' . $this->ticket->title)
-                    ->greeting('Здравствуйте, ' . $notifiable->name . '!')
-                    ->line('Был создан новый тикет №' . $this->ticket->id . ' с темой "' . $this->ticket->title . '".')
-                    ->line('Статус: ' . $this->ticket->status)
-                    ->line('Приоритет: ' . $this->ticket->priority);
+                    ->subject('New Ticket Created: ' . $this->ticket->title)
+                    ->greeting('Hello, ' . $notifiable->name . '!')
+                    ->line('A new ticket #' . $this->ticket->id . ' with subject "' . $this->ticket->title . '" has been created.')
+                    ->line('Status: ' . $this->ticket->status)
+                    ->line('Priority: ' . $this->ticket->priority);
                     
         // Добавляем информацию о файлах, если они есть
         if ($this->ticket->files->count() > 0) {
-            $message->line('К тикету прикреплены файлы:');
+            $message->line('Files attached to the ticket:');
             foreach ($this->ticket->files as $file) {
                 $message->line('- ' . $file->original_filename . ' (' . round($file->size / 1024, 2) . ' KB)');
             }
         }
 
-        return $message->action('Просмотреть тикет', $url)
-                       ->line('Спасибо за использование нашей системы!');
+        return $message->action('View Ticket', $url)
+                       ->line('Thank you for using our application!');
     }
 
     /**

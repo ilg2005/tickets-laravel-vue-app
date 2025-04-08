@@ -41,29 +41,29 @@ class TicketUpdatedNotification extends Notification implements ShouldQueue
     {
         $url = url('/tickets/' . $this->ticket->id);
         $message = (new MailMessage)
-            ->greeting('Здравствуйте, ' . $notifiable->name . '!');
+            ->greeting('Hello, ' . $notifiable->name . '!');
 
         // Если изменился статус
         if (isset($this->changedFields['status'])) {
-            $message->subject('Статус тикета обновлен: ' . $this->ticket->title)
-                ->line('Статус тикета №' . $this->ticket->id . ' ("' . $this->ticket->title . '") был изменен.')
-                ->line('Старый статус: ' . $this->changedFields['status']['old'])
-                ->line('Новый статус: ' . $this->changedFields['status']['new']);
+            $message->subject('Ticket Status Updated: ' . $this->ticket->title)
+                ->line('The status of ticket #' . $this->ticket->id . ' ("' . $this->ticket->title . '") has been changed.')
+                ->line('Old status: ' . $this->changedFields['status']['old'])
+                ->line('New status: ' . $this->changedFields['status']['new']);
         } else {
-            $message->subject('Тикет обновлен: ' . $this->ticket->title)
-                ->line('Тикет №' . $this->ticket->id . ' ("' . $this->ticket->title . '") был обновлен.');
+            $message->subject('Ticket Updated: ' . $this->ticket->title)
+                ->line('Ticket #' . $this->ticket->id . ' ("' . $this->ticket->title . '") has been updated.');
 
             // Выводим список измененных полей
             $fieldLabels = [
-                'title' => 'Название',
-                'description' => 'Описание',
-                'priority' => 'Приоритет'
+                'title' => 'Title',
+                'description' => 'Description',
+                'priority' => 'Priority'
             ];
 
             foreach ($this->changedFields as $field => $values) {
                 if (isset($fieldLabels[$field])) {
                     if ($field === 'description') {
-                        $message->line($fieldLabels[$field] . ' было изменено');
+                        $message->line($fieldLabels[$field] . ' has been changed');
                     } else {
                         $message->line($fieldLabels[$field] . ': ' . $values['old'] . ' → ' . $values['new']);
                     }
@@ -71,12 +71,12 @@ class TicketUpdatedNotification extends Notification implements ShouldQueue
             }
 
             // Добавляем текущий статус и приоритет
-            $message->line('Текущий статус: ' . $this->ticket->status)
-                   ->line('Текущий приоритет: ' . $this->ticket->priority);
+            $message->line('Current status: ' . $this->ticket->status)
+                   ->line('Current priority: ' . $this->ticket->priority);
         }
 
-        return $message->action('Просмотреть тикет', $url)
-            ->line('Спасибо за использование нашей системы!');
+        return $message->action('View Ticket', $url)
+            ->line('Thank you for using our application!');
     }
 
     /**
