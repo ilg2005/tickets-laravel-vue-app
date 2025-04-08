@@ -1,40 +1,53 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3';
-import InputError from '@/Components/InputError.vue';
-import FileUploader from '@/Components/FileUploader.vue';
+import { useForm } from "@inertiajs/vue3";
+import InputError from "@/Components/InputError.vue";
+import FileUploader from "@/Components/FileUploader.vue";
+import { useTicketFiles } from "@/Composables/useTicketFiles";
+import { useNotification } from "@/Composables/useNotification";
 
 const props = defineProps({
     ticketId: {
         type: Number,
-        required: true
+        required: true,
     },
     canCreateSolution: {
         type: Boolean,
-        default: false
-    }
+        default: false,
+    },
 });
 
-const emit = defineEmits(['created', 'files-updated']);
+const emit = defineEmits(["created", "files-updated"]);
+const { handleFileChange } = useTicketFiles();
+const { success } = useNotification();
 
 const form = useForm({
-    content: '',
-    type: 'comment',
+    content: "",
+    type: "comment",
     ticket_id: props.ticketId,
-    files: []
+    files: [],
 });
 
 const submit = () => {
-    form.post(route('ticket.followups.store'), {
-        onSuccess: () => {
-            // Простая перезагрузка страницы после успешного добавления
+    form.post(route("ticket.followups.store"), {
+        preserveScroll: true,
+        onSuccess: (response) => {
+            success("Follow-up added successfully");
+
+            // Эмитим события для обновления данных
+            if (response.props && response.props.followup) {
+                emit("created", response.props.followup);
+            }
+
+            if (response.props && response.props.files) {
+                emit("files-updated", response.props.files);
+            }
+
+            resetForm();
+            // Перезагружаем страницу для корректного обновления списка
             window.location.reload();
         },
-        forceFormData: true
+        forceFormData: true,
     });
-};
-
-const handleFileChange = (e) => {
-    form.files = e.target.files;
 };
 
 const resetForm = () => {
@@ -46,44 +59,58 @@ const resetForm = () => {
 <template>
     <form @submit.prevent="submit" class="w-full mt-6">
         <div class="gap-4 p-4 grid-layout">
+            <!-- Content Column -->
             <div class="content-column mb-4">
-                <label for="followup-content" class="block text-sm font-medium">Follow-up Content</label>
-                <textarea v-model="form.content" id="followup-content"
+                <label for="followup-content" class="block text-sm font-medium"
+                    >Follow-up Content</label
+                >
+                <textarea
+                    v-model="form.content"
+                    id="followup-content"
                     class="block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                    rows="6"></textarea>
+                    rows="6"
+                ></textarea>
                 <InputError :message="form.errors.content" class="mt-2" />
             </div>
 
+            <!-- Config Column -->
             <div class="config-column min-w-[250px]">
                 <div class="mb-4">
-                    <label for="followup-type" class="block text-sm font-medium">Follow-up Type</label>
-                    <select :disabled="!canCreateSolution" v-model="form.type"
+                    <label for="followup-type" class="block text-sm font-medium"
+                        >Follow-up Type</label
+                    >
+                    <select
+                        :disabled="!canCreateSolution"
+                        v-model="form.type"
                         id="followup-type"
-                        class="block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
+                        class="block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
+                    >
                         <option value="comment">Comment</option>
                         <option value="solution">Solution</option>
                     </select>
                     <InputError :message="form.errors.type" class="mt-2" />
                 </div>
-                
+
+                <!-- File Uploader -->
                 <div class="mb-4">
                     <FileUploader
                         v-model="form.files"
                         :errors="form.errors"
                         fieldName="files"
-                        @file-change="handleFileChange"
+                        @file-change="(e) => handleFileChange(e, form)"
                     />
                 </div>
-                
+
+                <!-- Button Container -->
                 <div class="flex justify-center gap-2 button-container">
-                    <button 
+                    <button
                         type="button"
                         @click="resetForm"
                         class="inline-flex items-center justify-center h-8 px-3 py-1.5 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
                     >
                         Cancel
                     </button>
-                    <button 
+                    <button
                         type="submit"
                         class="inline-flex items-center justify-center h-8 px-3 py-1.5 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 whitespace-nowrap"
                     >
@@ -122,22 +149,22 @@ const resetForm = () => {
     .grid-layout {
         grid-template-columns: 1fr;
     }
-    
+
     .content-column {
         grid-column: 1;
         grid-row: 1;
     }
-    
+
     .config-column {
         grid-column: 1;
         grid-row: 2;
         margin-top: 16px;
     }
-    
+
     .button-container {
         justify-content: space-between;
     }
-    
+
     .button-container button {
         flex: 1;
         min-width: 0;
@@ -151,7 +178,7 @@ const resetForm = () => {
         flex-direction: column;
         gap: 8px;
     }
-    
+
     .button-container button {
         width: 100%;
     }

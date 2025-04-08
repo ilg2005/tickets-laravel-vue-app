@@ -10,7 +10,7 @@ import TicketForm from '../Partial/TicketForm.vue';
 
 const { props } = usePage();
 const user = props.auth.user;
-const { confirm } = useNotification();
+const { success, confirm, error } = useNotification();
 
 const { hasPermission } = usePermission();
 
@@ -58,43 +58,53 @@ const goBack = () => {
 
 // Обработчик для удаления follow-up
 const handleFollowupDelete = (followupId) => {
-    if (confirm()) {
-        deleteFollowupForm.delete(route("ticket.followups.destroy", { id: followupId }), {
-            preserveScroll: true,
-            onSuccess: () => {
-                alert('Follow-up deleted successfully');
+    deleteFollowupForm.delete(route("ticket.followups.destroy", { id: followupId }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            success('Follow-up deleted successfully');
+            // Удаляем followup из локального состояния для мгновенного обновления UI
+            if (ticketProps.ticket && ticketProps.ticket.followups) {
                 const index = ticketProps.ticket.followups.findIndex(f => f.id === followupId);
                 if (index !== -1) {
                     ticketProps.ticket.followups.splice(index, 1);
                 }
             }
-        });
-    }
+        },
+        onError: (errors) => {
+            error('Failed to delete follow-up', errors);
+        }
+    });
 };
 
 // Обработчик для обновления follow-up
 const handleFollowupUpdate = (form) => {
     form.put(route('ticket.followups.update', form.followup_id), {
+        preserveScroll: true,
         onSuccess: (response) => {
-            const updatedFollowup = response.props.ticket.followups.find(f => f.id === form.followup_id);
-            const index = ticketProps.ticket.followups.findIndex(f => f.id === updatedFollowup.id);
-            if (index !== -1) {
-                ticketProps.ticket.followups.splice(index, 1, updatedFollowup);
-            }
-            alert('Follow-up updated successfully');
+            success('Follow-up updated successfully');
+            
+            // Перезагружаем страницу для применения обновлений
+            window.location.reload();
+        },
+        onError: (errors) => {
+            error('Failed to update follow-up', errors);
         }
     });
 };
 
 // Обработчик для создания follow-up
 const handleFollowupCreated = (newFollowup) => {
-    ticketProps.ticket.followups.push(newFollowup);
-    alert('Follow-up added successfully');
+    if (newFollowup && ticketProps.ticket && ticketProps.ticket.followups) {
+        ticketProps.ticket.followups.push(newFollowup);
+        success('Follow-up added successfully');
+    }
 };
 
 // Обработчик для обновления списка файлов
 const handleFilesUpdated = (updatedFiles) => {
-    updateFiles(updatedFiles);
+    if (updatedFiles) {
+        updateFiles(updatedFiles);
+    }
 };
 
 
@@ -135,7 +145,7 @@ const handleFilesUpdated = (updatedFiles) => {
                         @followup-updated="handleFollowupUpdate"
                     />
                     
-                    <!-- Форма для создания follow-up (только для режма редактирования) -->
+                    <!-- Форма для создания follow-up (только для режима редактирования) -->
                     <CreateFollowupForm
                         v-if="ticketProps.mode === 'edit'"
                         :ticket-id="ticketProps.ticket.id"

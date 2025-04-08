@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from 'vue';
 import FollowupItem from './FollowupItem.vue';
+import { useNotification } from '@/Composables/useNotification';
 
 const props = defineProps({
     followups: {
@@ -22,9 +22,10 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['followupDeleted', 'followupUpdated']);
+const { confirm } = useNotification();
 
 const deleteConfirm = (followupId) => {
-    if (confirm('Are you sure you want to proceed?')) {
+    if (confirm('Are you sure you want to delete this followup?')) {
         emit('followupDeleted', followupId);
         setTimeout(() => {
             window.location.reload();
@@ -36,7 +37,7 @@ const deleteConfirm = (followupId) => {
 <template>
     <div>        
         <div class="overflow-auto" style="max-height: 400px;">
-            <template v-if="followups.length > 0">
+            <template v-if="followups && followups.length > 0">
                 <FollowupItem
                     v-for="followup in followups"
                     :key="followup.id"
