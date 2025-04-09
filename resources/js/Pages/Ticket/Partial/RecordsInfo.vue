@@ -1,14 +1,14 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 const props = defineProps({
     from: {
-        type: Number,
-        required: true
+        type: [Number, null],
+        default: 0
     },
     to: {
-        type: Number,
-        required: true
+        type: [Number, null],
+        default: 0
     },
     total: {
         type: Number,
@@ -32,12 +32,16 @@ watch(() => props.perPage, (newValue) => {
 const changePerPage = () => {
     emit('perPageChange', Number(perPageLocal.value));
 };
+
+// Вычисляемые свойства для безопасного отображения
+const displayFrom = computed(() => props.from || 0);
+const displayTo = computed(() => props.to || 0);
 </script>
 
 <template>
     <div class="flex flex-wrap justify-between items-center mb-4">
         <div class="text-sm text-gray-700">
-            Showing {{ from }} - {{ to }} of {{ total }} records
+            Showing {{ displayFrom }} - {{ displayTo }} of {{ total }} records
         </div>
         <div class="flex items-center space-x-2">
             <label for="per-page" class="text-sm text-gray-600">

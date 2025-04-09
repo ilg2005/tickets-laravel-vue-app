@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import InputText from '@/Components/InputText.vue';
+import TextInput from '@/Components/TextInput.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const props = defineProps({
@@ -79,22 +79,22 @@ onUnmounted(() => {
         <div class="grid-filter-container">
             <div class="id-cell">
                 <label for="filter-id" class="block text-xs font-medium text-gray-500 mb-1 md:hidden">#</label>
-                <InputText id="filter-id" v-model="id" placeholder="ID" class="w-full" @input="emitChanges" />
+                <TextInput id="filter-id" v-model="id" placeholder="ID" class="w-full" @input="emitChanges" />
             </div>
             
             <div v-if="isAdmin" class="user-cell">
                 <label for="filter-user" class="block text-xs font-medium text-gray-500 mb-1 md:hidden">User</label>
-                <InputText id="filter-user" v-model="user_name" placeholder="User" class="w-full" @input="emitChanges" />
+                <TextInput id="filter-user" v-model="user_name" placeholder="User" class="w-full" @input="emitChanges" />
             </div>
             
             <div class="title-cell">
                 <label for="filter-title" class="block text-xs font-medium text-gray-500 mb-1 md:hidden">Title</label>
-                <InputText id="filter-title" v-model="title" placeholder="Title" class="w-full" @input="emitChanges" />
+                <TextInput id="filter-title" v-model="title" placeholder="Title" class="w-full" @input="emitChanges" />
             </div>
             
             <div class="description-cell">
                 <label for="filter-desc" class="block text-xs font-medium text-gray-500 mb-1 md:hidden">Description</label>
-                <InputText id="filter-desc" v-model="description" placeholder="Description" class="w-full" @input="emitChanges" />
+                <TextInput id="filter-desc" v-model="description" placeholder="Description" class="w-full" @input="emitChanges" />
             </div>
             
             <div class="status-cell">
