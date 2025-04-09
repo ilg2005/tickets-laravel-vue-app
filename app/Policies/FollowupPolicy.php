@@ -13,14 +13,6 @@ class FollowupPolicy
     use HandlesAuthorization;
 
     /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return $user->can(Permissions::VIEW_FOLLOWUPS);
-    }
-
-    /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, Followup $followup): bool
@@ -66,23 +58,14 @@ class FollowupPolicy
     public function delete(User $user, Followup $followup): bool
     {
         // Админы могут удалять любые followups, пользователи - только свои
-        return $user->can(Permissions::DELETE_FOLLOWUPS) && 
-               ($user->can(Permissions::VIEW_ANY_TICKETS) || $user->id === $followup->user_id);
+        return $user->can(Permissions::DELETE_FOLLOWUPS) && $this->isOwnerOrAdmin($user, $followup);
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Проверяет, является ли пользователь владельцем follow-up или администратором
      */
-    public function restore(User $user, Followup $followup): bool
+    private function isOwnerOrAdmin(User $user, Followup $followup): bool
     {
-        return false; // Not implemented
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Followup $followup): bool
-    {
-        return false; // Not implemented
+        return $user->can(Permissions::VIEW_ANY_TICKETS) || $user->id === $followup->user_id;
     }
 }
